@@ -1,0 +1,14 @@
+################### Copyright (c) 2012 - 2023 MMI Studios ###################
+#   This is the HOST file for MMI Studios machines running the Windows 10   #
+#   operating system. This file serves three functions:                     #
+#       1)  To block specific host names from making outgoing connections   #
+#           to the internet.                                                #
+#       2)  To add a level of privacy, security, and parental control to    #
+#           the machine.                                                    #
+#       3)  To map host names to the local web servers virtual hosts in a   #
+#           development environment.                                        #
+#############################################################################
+
+# Localhost:
+127.0.0.1               localhost
+
