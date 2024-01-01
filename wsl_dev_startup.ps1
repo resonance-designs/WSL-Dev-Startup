@@ -10,7 +10,7 @@
 #######################################################################################
 
 # Define Includes Path
-$inc_path = "C:\Dev\Scripts\PS\WSL-Dev-Startup\includes\"
+$inc_path = "C:\Dev\Scripts\PS\WSL-Dev-Startup\includes"
 
 # Import the variable definitions file
 <# TODO: Turn this into a module
@@ -21,14 +21,6 @@ ImportScriptVariables
 #. $inc_path"\variable-definitions.ps1"
 . $inc_path"\variable-definitions.example.ps1"
 
-# Start WSL Services
-<# TODO: Turn this into a module
-Import-Module StartWSLServices
-Import-Module $modules_path"StartWSLServices.psm1"
-StartWSLServices
-#>
-. $inc_path"\wsl-services.ps1"
-
 # Import Utilities
 <# TODO: Turn this into a module
 Import-Module ImportUtilities
@@ -36,6 +28,14 @@ Import-Module $modules_path"ImportUtilities.psm1"
 ImportUtilities
 #>
 . $inc_path"\utilities.ps1"
+
+# Start WSL Services
+<# TODO: Turn this into a module
+Import-Module StartWSLServices
+Import-Module $modules_path"StartWSLServices.psm1"
+StartWSLServices
+#>
+. $inc_path"\wsl-services.ps1"
 
 # Import Hosts
 <# TODO: Turn this into a module
@@ -53,4 +53,6 @@ NetworkConfig
 #>
 . $inc_path"\network-config.ps1"
 
-Pause $exit_msg
+StyleOutput $exit_dec "YELLOW"
+StyleOutput $exit_msg "YELLOW"
+Pause $exit_dec

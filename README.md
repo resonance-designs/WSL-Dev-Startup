@@ -57,6 +57,8 @@ In this repo you will find a few examples included in this folder:
 *	**<code>host-array.example.ps1</code>**
 *	**<code>software-blocks.example.txt</code>**
 
+The text files contain chunks of a hosts file that is copied over to the Windows hosts file. The **<code>host-array.example.ps1</code>** contains an object array. You can use this array to specify comment lines as well. 
+
 ### <code>\includes</code>
 The **<code>\includes</code>** folder contains various functions, utilities, configurations, and services. We'll go through the purpose of each of them:
 
@@ -82,6 +84,11 @@ This contains functions for adding and removing hosts to the Windows hosts file 
 #### <code>wsl-services.ps1</code>
 This file contains the commands to start the needed WSL services. Currently the only services included in this file are Apache and MySQL. 
 
+---
+
+#### Notes
+*	Use the example files and the comments found throughout the source-code to better understand how these files work together.
+
 ## Customizing Script Files
 ### Coming soon...
 
@@ -90,3 +97,4 @@ This file contains the commands to start the needed WSL services. Currently the 
 
 ## Planned Features/Updates
 *	Replacing "dot sourced" include files with custom PowerShell modules that include additional functions. 
+*	Improving upon the source-code comments.

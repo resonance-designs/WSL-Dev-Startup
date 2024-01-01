@@ -9,14 +9,19 @@ function SleepProgress($TotalSeconds, [string]$Msg) {
     }    
 }
 
+# Simple utility to stylize the output
+function StyleOutput([string]$msg, $fcolor){
+    Write-Host "$msg" -ForegroundColor "$fcolor"
+}
+
 # Pause for user input with custom message
-function Pauses($message) {
+function Pause($message) {
     # Check if running Powershell ISE
     if ($psISE) {
         Add-Type -AssemblyName System.Windows.Forms
         [System.Windows.Forms.MessageBox]::Show("$message")
     } else {
-        Write-Host "$message" -ForegroundColor Yellow
+        StyleOutput $message "YELLOW"
         $null = $Host.UI.RawUI.ReadKey("NoEcho,IncludeKeyDown")
     }
 }
