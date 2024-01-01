@@ -45,12 +45,11 @@ In order for this script to work, there a few things that we need to make sure a
 ## Explanation of Files and Folders
 Let's briefly go over the purpose of the folders and files the script utilizes.
 
-### <code>\</code>
+### <code>root</code>
 The root contains the two main script files that launch the script (**<code>wsl\_dev\_startup.cmd</code>**) and run it's commands (**<code>wsl\_dev\_startup.ps1</code>**).
 
 ### <code>\host-parts</code>
 The **<code>\host-parts</code>** folder contains all the "parts" or "blocks" used to build the Windows hosts file, which is typically located at **<code>C:\Windows\System32\drivers\etc\hosts</code>**. These parts are injected into the Windows hosts file in sequence. These files can be whatever you want so long as they match what is defined in the **<code>\includes\variable-definitions.ps1</code>** file which we will get to soon.
-
 In this repo you will find a few examples included in this folder:
 
 *	**<code>ad-blocks.example.txt</code>**
