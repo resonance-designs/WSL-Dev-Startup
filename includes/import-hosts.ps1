@@ -12,12 +12,10 @@ SleepProgress 5 $imp_head_msg
 #Pause $cont_msg
 
 # Import WSL Hosts
-<# TODO: Turn this into a module
-Import-Module WSLHosts
-Import-Module $modules_path"WSLHosts.psm1"
-WSLHosts
-#>
-. $inc_path"\wsl-hosts.ps1"
+. $inc_path"\wsl-hosts.example.ps1"
+Write-Output $imp_wsl_msg
+SleepProgress 5 $imp_wsl_msg
+#Pause $cont_msg
 
 # Import the software vendor host definitions to block traffic to
 Add-Content -Path $host_file -Value $software_blocks | Wait-Process

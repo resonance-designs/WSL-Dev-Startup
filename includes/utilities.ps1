@@ -10,7 +10,7 @@ function SleepProgress($TotalSeconds, [string]$Msg) {
 }
 
 # Pause for user input with custom message
-function Pause ($message) {
+function Pauses($message) {
     # Check if running Powershell ISE
     if ($psISE) {
         Add-Type -AssemblyName System.Windows.Forms

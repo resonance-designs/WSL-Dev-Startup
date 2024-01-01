@@ -18,7 +18,8 @@ Import-Module ImportScriptVariables
 Import-Module $modules_path"\ImportScriptVariables.psm1"
 ImportScriptVariables
 #>
-. $inc_path"\variable-definitions.ps1"
+#. $inc_path"\variable-definitions.ps1"
+. $inc_path"\variable-definitions.example.ps1"
 
 # Start WSL Services
 <# TODO: Turn this into a module

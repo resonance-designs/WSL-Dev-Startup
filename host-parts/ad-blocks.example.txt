@@ -1,0 +1,15 @@
+# Shady Sites & Ad Servers
+127.0.0.1               freeviewmovies.com
+127.0.0.1               www.freeviewmovies.com
+127.0.0.1               helltraffic.com
+127.0.0.1               www.helltraffic.com
+127.0.0.1               humoron.com
+127.0.0.1               www.humoron.com
+127.0.0.1               humoronline.com
+127.0.0.1               www.humoronline.com
+127.0.0.1               oldconsolevideo.com
+127.0.0.1               www.oldconsolevideo.com
+127.0.0.1               software.filestube.com
+127.0.0.1               4chan.org
+127.0.0.1               www.4chan.org
+

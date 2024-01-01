@@ -1,0 +1,7 @@
+# Block Software Sites
+## Torrent
+127.0.0.1               thepiratebay.org
+127.0.0.1               www.thepiratebay.org
+127.0.0.1               fitgirl-repacks.site
+127.0.0.1               www.fitgirl-repacks.site
+
