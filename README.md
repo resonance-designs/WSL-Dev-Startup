@@ -32,7 +32,7 @@ In order for this script to work, there a few things that we need to make sure a
 	1. Run (<code>Win + R</code>) <code>shell:startup</code> to open up the Windows startup folder.
 	2. Right-click in the startup folder and select New->Shortcut
 	3. Click "Browse"
-	4. Locate and select the <code>wsl_dev_startup.cmd</code> file from this repo.
+	4. Locate and select the <code>wsl\_dev\_startup.cmd</code> file from this repo.
 	5. Click "Next"
 	6. Give the shortcut a name and click "Finish"
 	7. Right-click on the newly created shortcut and select "Properties"
@@ -40,7 +40,7 @@ In order for this script to work, there a few things that we need to make sure a
 	9. Check the "Run as administrator" check-box and then click "OK"
 	10. Click "Apply" and the click "OK"
 
-	Now you can copy this shortcut to where you like, such as your desktop to easily launch the script.
+	Now you can copy this shortcut to wherever you like, such as your desktop, to easily launch the script.
 
 ## Customizing Script Files
 ### Coming soon...
@@ -48,4 +48,5 @@ In order for this script to work, there a few things that we need to make sure a
 ## Usage
 ### Coming soon...
 
-	
+## Planned Features/Updates
+*	Replacing "dot sourced" include files with custom PowerShell modules that include additional functions. 
