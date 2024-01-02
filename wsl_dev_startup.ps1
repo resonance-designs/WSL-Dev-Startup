@@ -9,8 +9,11 @@
 #   ("<ip>    <host>    # comment")
 #######################################################################################
 
-# Define Includes Path
-$inc_path = "C:\Dev\Scripts\PS\WSL-Dev-Startup\includes"
+# Define Script Paths
+$root_path = $PSScriptRoot
+$inc_path = $root_path+"\includes"
+$hosts_path = $root_path+"\host-parts"
+$modules_path = $root_path+"\modules"
 
 # Import the variable definitions file
 <# TODO: Turn this into a module
@@ -53,6 +56,6 @@ NetworkConfig
 #>
 . $inc_path"\network-config.ps1"
 
-StyleOutput $exit_dec "YELLOW"
-StyleOutput $exit_msg "YELLOW"
-Pause $exit_dec
+StyleOutput $exit_dec $color_array[14] $color_array[0] # Styling example of "utilities.ps1->StyleOutput" using an array defined in "variable-definitions.example.ps1"
+StyleOutput $exit_msg "YELLOW" "BLACK" # Styling example of "utilities.ps1->StyleOutput" using in-line strings
+Pause $exit_dec $yellow $black # Styling example of "utilities.ps1->StyleOutput" using variables defined in "variable-definitions.example.ps1"

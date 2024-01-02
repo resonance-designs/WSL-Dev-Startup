@@ -1,7 +1,4 @@
 # Define the variables
-## Paths
-$hosts_path = "C:\Dev\Scripts\PS\WSL-Dev-Startup\host-parts"
-$modules_path = "C:\Dev\Scripts\PS\WSL-Dev-Startup\modules"
 ## Host Source Files
 $header_localhost = Get-Content -Path $hosts_path"\header-localhost.example.txt"
 $software_blocks = Get-Content -Path $hosts_path"\software-blocks.example.txt"
@@ -9,6 +6,43 @@ $ad_blocks = Get-Content -Path $hosts_path"\ad-blocks.example.txt"
 $host_array = $hosts_path + "\host-array.example.ps1"
 $host_file = ".\drivers\etc\hosts"
 ## Messaging
+### Colors
+#### Example as an array
+$color_array = @(
+    "Black",
+    "DarkBlue",
+    "DarkGreen",
+    "DarkCyan",
+    "DarkRed",
+    "DarkMagenta",
+    "DarkYellow",
+    "Gray",
+    "DarkGray",
+    "Blue",
+    "Green",
+    "Cyan",
+    "Red",
+    "Magenta",
+    "Yellow",
+    "White"
+)
+#### Example as individual variables
+$black = 'BLACK'
+$darkblue = "DARKBLUE"
+$darkgreen = "DARKGREEN"
+$darkcyan = "DARKCYAN"
+$darkred = "DARKRED"
+$darkmagenta = "DARKMAGENTA"
+$darkyellow = "DARKYELLOW"
+$gray = "GRAY"
+$darkgrey = "DARKGREY"
+$blue = "BLUE"
+$green = "GREEN"
+$cyan = "CYAN"
+$red = "RED"
+$magenta = "MAGENTA"
+$yellow = "YELLOW"
+$white = "WHITE"
 ### Decorative
 $one_line = "`n"
 $two_lines = "`n `n"
@@ -36,7 +70,6 @@ $apache_port = "80"
 $nginx_port = "81"
 $rails_port = "10524"
 $mern_port = "3000"
-
 # Define the array of WSL hosts
 $data = @(
     . $host_array

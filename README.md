@@ -72,6 +72,7 @@ This file serves to add network configurations to the environment. I currently h
 This file contains a small collection of utilities used throughout the script. The included functions so far include:
 
 *	**<code>SleepProgress</code>**: Displays a progress bar which can be set to a time in seconds.
+*	**<code>StyleOutput</code>**: Specify styling of the terminal output.
 *	**<code>Pause</code>**: Creates a "pause" that waits for a user key-press before continuing to the next line of the script, similar to that found in MSDOS, with customizable output message.
 *	**<code>PrintHostArray</code>**: A trouble-shooting utility to display the values of the **<code>host-array.example.ps1</code>** file. 
 
