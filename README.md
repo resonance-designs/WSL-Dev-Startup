@@ -1,6 +1,8 @@
 # WSL-Dev-Startup
 A PowerShell script to start WSL services, build the Windows hosts file using various sources (including the WSL host IP), and run network configuration tasks.
 
+<div style="background: #FCC; padding: 2%; margin-top: 2%; border-radius: 5px;"><strong>Warning:</strong> This script builds the Windows host file from scratch, clearing out anything currently in it before building it, it does not append to it. Please backup your Windows hosts file somewhere safe and make sure to fully read this documentation before attempting to run this script. You can inject what is currently in your hosts file as part of the build process. You will learn more on how that works later, in the <strong>"Explanation of Files and Folders"</strong> section.</div> 
+
 ## Prerequisites
 These instructions and the script itself assumes you have WSL2 installed on your Windows machine and the out-of-the-box configuration and examples contained in the script assume a Debian-based distribution for WSL, specifically Ubuntu 22.04, with a LAMP stack installed in that distribution. That won't be covered here but you can check out my thorough [WSL (Ubuntu 22.04.2 LTS) Local Development Environment Setup Guide](#) for instructions on that. 
 
@@ -80,10 +82,13 @@ In this repo you will find a few examples included in this folder:
 *	**<code>host-array.example.ps1</code>**
 *	**<code>software-blocks.example.txt</code>**
 
-The text files contain chunks of a hosts file that is copied over to the Windows hosts file. The **<code>host-array.example.ps1</code>** contains an object array. You can use this array to specify comment lines as well. 
+The text files contain chunks of a hosts file that you want copied over to the Windows hosts file. The **<code>host-array.example.ps1</code>** contains an object array consisting of hosts (typically virtual hosts/sites configured in your Apache and/or Nginx web servers) that you want to map to the WSL IP. You can use this array to specify comment lines as well. 
 
 ### <code>\includes</code>
 The **<code>\includes</code>** folder contains various functions, utilities, configurations, and services. We'll go through the purpose of each of them:
+
+#### <code>colors.ps1</code>
+This file runs the commands necessary to build the Windows host file. Certain parameters of these commands need to match your configurations and variable values. You can use this file as a guide and remove or add commands to fit your needs.
 
 #### <code>import-hosts.ps1</code>
 This file runs the commands necessary to build the Windows host file. Certain parameters of these commands need to match your configurations and variable values. You can use this file as a guide and remove or add commands to fit your needs.
