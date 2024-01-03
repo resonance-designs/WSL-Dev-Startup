@@ -2,7 +2,9 @@
 A PowerShell script to start WSL services, build the Windows hosts file using various sources (including the WSL host IP), and run network configuration tasks.
 
 ## Prerequisites
-In order for this script to work, there a few things that we need to make sure are configured correctly in WSL and native Windows.
+These instructions and the script itself assumes you have WSL2 installed on your Windows machine and the out-of-the-box configuration and examples contained in the script assume a Debian-based distribution for WSL, specifically Ubuntu 22.04, with a LAMP stack installed in that distribution. That won't be covered here but you can check out my thorough [WSL (Ubuntu 22.04.2 LTS) Local Development Environment Setup Guide](#) for instructions on that. 
+
+In order for this script to work, there a few things that we need to make sure are configured correctly in WSL and Windows.
 
 *   Remove password requirement for specific service commands in WSL. This lets WSL services start when Windows boots without waiting for a password from the user. You definitely wouldn't want that in a production server, but it's perfectly fine in your local WSL dev environment.<br>
     To achieve this you need to edit your **<code>/etc/sudoers</code>** file in your WSL distro by adding the following lines at the bottom:
@@ -10,9 +12,9 @@ In order for this script to work, there a few things that we need to make sure a
         %sudo   ALL=(ALL) NOPASSWD: /usr/sbin/service apache2 restart
         %sudo   ALL=(ALL) NOPASSWD: /usr/sbin/service mysql restart
 
-*   Enable script execution with a policy to allow all scripts in the group policy editor. <br>
-    To achieve this you need to:
-	1.	Run (**<code>Win + R</code>**) **<code>gpedit.msc</code>** and nagivate to:
+*   Enable script execution with a policy to allow all scripts in the Windows Group Policy Editor:
+
+	1.	Run (**<code>Win + R</code>**) **<code>gpedit.msc</code>** and navigate to:
 
 			Computer Configuration
 	        |-- Administrative Templates
@@ -26,21 +28,42 @@ In order for this script to work, there a few things that we need to make sure a
 
 	For a more thorough examination of this process and why it may be required, see [this answer](https://stackoverflow.com/questions/27753917/how-do-you-successfully-change-execution-policy-and-enable-execution-of-powershe#answer-27755459) on [stackoverflow.com](https://stackoverflow.com).
     
-*	Create shortcuts to start script. This is optional but highly recommended, especially if you want to run this script during startup and make it easily accessible in case you need to run it again in a current session. <br>
+## Installation
+1.	Clone this repository to a location of your choosing (e.g C:\Dev\Scripts\PS\WSL-Dev-Startup) using the git command: 
+
+		git clone https://github.com/resonance-designs/WSL-Dev-Startup
+
+2.	Create a new task using Windows Task Scheduler <br>
+	1.	Run (**<code>Win + R</code>**) **<code>taskschd.msc</code>**.
+	2.	Right-click on "Task Scheduler Library" then click "New Folder..." and name it whatever you like (e.g Scripts).
+	3.	Right-click on the folder you just created and click "Create Task..." (**not** "Create Basic Task...").
+	4.	Under the "General" tab enter a name (e.g WSL-Dev-Startup) and description of your choosing.
+	5.	Click the check-box "Run with highest privileges".
+	6.	Select your target operating system on the "Configure for:" drop-down (e.g Windows 10).
+	7.	Switch over to the "Triggers" tab and click "New..."
+	8.	Select "At log on" from the "Begin the task:" drop-down.
+	9.	Select the user you want this task to run under or select "Any user" if you intend to run this script as any user.
+	10.	Click "OK".
+	11.	Switch over to the "Actions" tab and click "New..."
+	12.	The "Action:" should be "Start a program" in the drop-down.
+	13.	Click "Browse..." to navigate to the folder where you cloned the repository and select the **<code>wsl\_dev\_startup.cmd</code>** file.
+	14.	Click "OK".
+	15.	Swith over to the "Conditions" tab and uncheck "Stop if the computer switches to battery power" and then "Start the task only if the computer is on AC power"
+	16.	Click "OK".
+	
+	You have successfully created the startup task for the script. 
+
+3.	Create a shortcut to manually start the task. This is optional but is recommended if you want to make it easily accessible to run the script again in a current session. <br>
 	To achieve this, you need to:
 
-	1. Run (**<code>Win + R</code>**) **<code>shell:startup</code>** to open up the Windows startup folder.
-	2. Right-click in the startup folder and select New->Shortcut
-	3. Click "Browse"
-	4. Locate and select the **<code>wsl\_dev\_startup.cmd</code>** file from this repo.
-	5. Click "Next"
-	6. Give the shortcut a name and click "Finish"
-	7. Right-click on the newly created shortcut and select "Properties"
-	8. Under the "Shortcut" tab, click on the "Advanced..." button
-	9. Check the "Run as administrator" check-box and then click "OK"
-	10. Click "Apply" and the click "OK"
+	1. Right-click on an empty section of your desktop and select New->Shortcut
+	2. Enter the following into the item location, making sure to replace **Scripts** and **WSL-Dev-Startup** with the folder name and task name you used when creating the task earlier:
 
-	Now you can copy this shortcut to wherever you like, such as your desktop, to easily launch the script.
+			schtasks /run /tn "Scripts\WSL-Dev-Startup"
+	3. Click "Next"
+	4. Give the shortcut a name and click "Finish"
+
+	Now you can copy or pin this shortcut to wherever you like, such as your start menu or task bar, to easily launch the script.
 
 ## Explanation of Files and Folders
 Let's briefly go over the purpose of the folders and files the script utilizes.
@@ -89,12 +112,6 @@ This file contains the commands to start the needed WSL services. Currently the 
 
 #### Notes
 *	Use the example files and the comments found throughout the source-code to better understand how these files work together.
-
-## Customizing Script Files
-### Coming soon...
-
-## Usage
-### Coming soon...
 
 ## Planned Features/Updates
 *	Replacing "dot sourced" include files with custom PowerShell modules that include additional functions. 

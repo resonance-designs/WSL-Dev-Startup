@@ -11,6 +11,6 @@ function SleepProgress($TotalSeconds, [string]$Msg) {
 
 # Trouble-Shooting: Print host array output
 function PrintHostArray() {
-    $data.ForEach({ $PSItem.Action + " " + $PSItem.Name + " " + $PSItem.IP})
+    $hosts.ForEach({ $PSItem.Action + " " + $PSItem.Name + " " + $PSItem.IP})
     break
 }

@@ -23,7 +23,7 @@ function ImportScriptVariables() {
     $nginx_port = "81"
 
     # Define the array of WSL hosts
-    $data = @(
+    $hosts = @(
         #Import-Module MyWSLHostsArray
         . $host_array
     )

@@ -1,17 +1,17 @@
 function add-host($filename) {
-    Add-Content -Path $filename -Value $data.ForEach({$PSItem.IP + "`t`t`t" + $PSItem.Name})
+    Add-Content -Path $filename -Value $hosts.ForEach({$PSItem.IP + "`t`t`t" + $PSItem.Name})
 }
 function remove-host($filename) {
-    Get-Content -Path $filename | -replace $data.ForEach({$PSItem.IP}),"" | -replace $data.ForEach({$PSItem.Name}),""
+    Get-Content -Path $filename | -replace $hosts.ForEach({$PSItem.IP}),"" | -replace $hosts.ForEach({$PSItem.Name}),""
 }
 
 try {
-    if ($data.($PSItem.Action -eq "add")) {
+    if ($hosts.($PSItem.Action -eq "add")) {
         add-host $host_file
-    } elseif ($data.($PSItem.Action -eq "remove")) {
+    } elseif ($hosts.($PSItem.Action -eq "remove")) {
         remove-host $host_file
     } else {
-        throw "Invalid operation '" + $data.($PSItem.Action) + "' - must be one of 'add', 'remove', 'show'."
+        throw "Invalid operation '" + $hosts.($PSItem.Action) + "' - must be one of 'add', 'remove', 'show'."
     }
 } catch  {
     Write-Host $error[0]

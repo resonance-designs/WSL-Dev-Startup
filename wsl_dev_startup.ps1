@@ -56,6 +56,6 @@ NetworkConfig
 #>
 . $inc_path"\network-config.ps1"
 
-StyleOutput $exit_dec $color_array[14] $color_array[0] # Styling example of "utilities.ps1->StyleOutput" using an array defined in "variable-definitions.example.ps1"
-StyleOutput $exit_msg "YELLOW" "BLACK" # Styling example of "utilities.ps1->StyleOutput" using in-line strings
-Pause $exit_dec $yellow $black # Styling example of "utilities.ps1->StyleOutput" using variables defined in "variable-definitions.example.ps1"
+StyleOutput $exit_dec $yellow $black
+StyleOutput $exit_msg $yellow $black
+Pause $exit_dec $yellow $black
