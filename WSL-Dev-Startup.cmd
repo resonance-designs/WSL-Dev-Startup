@@ -9,4 +9,4 @@
 ::   ("<ip>    <host>    # comment")
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-Powershell -File C:\Dev\Scripts\PS\WSL-Dev-Startup\wsl_dev_startup.ps1
+Powershell -File %~dp0\WSL-Dev-Startup.ps1
