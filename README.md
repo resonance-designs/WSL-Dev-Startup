@@ -1,25 +1,20 @@
 # WSL-Dev-Startup
-A PowerShell script to start WSL services, build the Windows hosts file using various sources (including the WSL host IP), and run network configuration tasks.
+A PowerShell script to start WSL services, build the Windows hosts file using various resources, and run network configuration tasks.
 
 > [!WARNING]
-> This script builds the Windows host file from scratch, clearing out anything currently in it before building it, it does not append to it. Please backup your Windows hosts file somewhere safe and make sure to fully read this documentation before attempting to run this script. You can inject what is currently in your hosts file as part of the build process. You will learn more on how that works later, in the <strong>"Explanation of Files and Folders"</strong> section.
-
-<!-- 
-<div style="background: #FCC; padding: 2%; margin-top: 2%; border-radius: 5px;"><strong>Warning:</strong> This script builds the Windows host file from scratch, clearing out anything currently in it before building it, it does not append to it. Please backup your Windows hosts file somewhere safe and make sure to fully read this documentation before attempting to run this script. You can inject what is currently in your hosts file as part of the build process. You will learn more on how that works later, in the <strong>"Explanation of Files and Folders"</strong> section.</div>
--->
+> This script builds the Windows host file from scratch, clearing out anything currently in it before building it, it does not append to whatever is already contained within it. Please backup your Windows hosts file somewhere safe and make sure to fully read this documentation before attempting to run this script. You can inject what is currently in your hosts file as part of the build process. You will learn more on how that works later, in the <strong>"Explanation of Files and Folders"</strong> section.
 
 ## Prerequisites
-These instructions and the script itself assumes you have WSL2 installed on your Windows machine and the out-of-the-box configuration and examples contained in the script assume a Debian-based distribution for WSL, specifically Ubuntu 22.04, with a LAMP stack installed in that distribution. That won't be covered here but you can check out my thorough [WSL (Ubuntu 22.04.2 LTS) Local Development Environment Setup Guide](#) for instructions on that. 
+These instructions and the script itself assumes you have WSL2 installed on your Windows machine and the out-of-the-box configuration and examples contained in the script assume a Debian-based distribution for WSL, specifically Ubuntu 22.04, with a LAMP stack installed in that distribution. All of that won't be covered here but you can check out my thorough [WSL Local Development Environment Setup Guide](https://gist.github.com/resonancedesigns/85e4a30a2754bbb394eafa3d39792d16) to walk you through the entire process. 
 
-In order for this script to work, there a few things that we need to make sure are configured correctly in WSL and Windows.
+In order for this script to work, there are a couple things that we need to make sure are configured correctly in WSL and Windows.
 
-*   Remove password requirement for specific service commands in WSL. This lets WSL services start when Windows boots without waiting for a password from the user. You definitely wouldn't want that in a production server, but it's perfectly fine in your local WSL dev environment.<br>
-    To achieve this you need to edit your **<code>/etc/sudoers</code>** file in your WSL distro by adding the following lines at the bottom:
+1.	**Remove password requirement for specific service commands in WSL.** This lets WSL services start when Windows boots without waiting for input from the user for the users password. You probably wouldn't want that in a production environment, but it's perfectly fine in your local WSL dev environment. To achieve this you need to edit your **<code>/etc/sudoers</code>** file in your WSL distro by adding the following lines at the bottom:
 
         %sudo   ALL=(ALL) NOPASSWD: /usr/sbin/service apache2 restart
         %sudo   ALL=(ALL) NOPASSWD: /usr/sbin/service mysql restart
 
-*   Enable script execution with a policy to allow all scripts in the Windows Group Policy Editor:
+2.	**Enable script execution with a policy to allow all scripts in the Windows Group Policy Editor.** You may or may not need to do this but you can go through these steps to see if the group policy is already set and adjust accordingly. In a work environment you may need to go through your IT security team to enable this.  
 
 	1.	Run (**<code>Win + R</code>**) **<code>gpedit.msc</code>** and navigate to:
 
@@ -83,7 +78,7 @@ The **<code>\host-parts</code>** folder contains all the "parts" or "blocks" use
 In this repo you will find a few examples included in this folder:
 
 *	**<code>ad-blocks.example.txt</code>**
-*	**<code>header-localhost.example.txt</code>**
+*	**<code>HeaderLocalhost.example.txt</code>**
 *	**<code>host-array.example.ps1</code>**
 *	**<code>software-blocks.example.txt</code>**
 
@@ -110,7 +105,7 @@ This file contains a small collection of utilities used throughout the script. T
 *	**<code>PrintHostArray</code>**: A trouble-shooting utility to display the values of the **<code>host-array.example.ps1</code>** file. 
 
 #### <code>variable-definitions.ps1</code>
-This file contains variables for paths, files, arrays, and string used in various configurations and functions that are frequently used throughout the script. There is only one variable that is defined outside of this script, and that is the $inc_path variable which is required by the root **<code>wsl\_dev\_startup.ps1</code>** file before we can import this **<code>variable-definitions.ps1</code>** file.
+This file contains variables for paths, files, arrays, and string used in various configurations and functions that are frequently used throughout the script. There is only one variable that is defined outside of this script, and that is the **<code>$incs_path</code>** variable which is required by the root **<code>wsl\_dev\_startup.ps1</code>** file before we can import this **<code>variable-definitions.ps1</code>** file.
 
 #### <code>wsl-hosts.ps1</code>
 This contains functions for adding and removing hosts to the Windows hosts file that are mapped to either the native WSL distro IP or to the static IP's defined in the **<code>network-config.ps1</code>** file mentioned earlier. The host values used by these functions are stored in an object array defined in the  **<code>\host-parts\host-array.example.ps1</code>** file.
@@ -126,3 +121,4 @@ This file contains the commands to start the needed WSL services. Currently the 
 ## Planned Features/Updates
 *	Replacing "dot sourced" include files with custom PowerShell modules that include additional functions. 
 *	Improving upon the source-code comments.
+*	More WSL services in **<code>wsl-services.ps1</code>**
