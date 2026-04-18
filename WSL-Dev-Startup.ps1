@@ -10,6 +10,10 @@
 #######################################################################################
 # Import Script Config Params and Paths
 $config = Import-PowerShellDataFile -Path $PSScriptRoot"\data\Config.example.psd1"
+$isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
+if (-not $isAdmin) {
+    throw "WSL Dev Startup must be run from an elevated PowerShell session because it updates the Windows hosts file and portproxy rules."
+}
 $mdls_path = $PSScriptRoot+$config.Modules
 $host_parts = $PSScriptRoot+$config.HostParts
 $data_path = $PSScriptRoot+$config.Data
@@ -18,6 +22,7 @@ $colors = $config.Colors
 . $ui_path"$colors"
 # Import Script Modules
 Import-Module -Name $mdls_path\Utilities
+$config.WSLDist = ResolveWSLDistro $config.WSLDist $config.WSLDistPrompt
 Import-Module -Name $mdls_path\WSLServices
 Import-Module -Name $mdls_path\ImportHosts
 Import-Module -Name $mdls_path\NetConfig

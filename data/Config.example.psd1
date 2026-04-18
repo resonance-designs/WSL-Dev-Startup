@@ -1,8 +1,10 @@
 @{
     Modules = "\modules"
     WinHostsFile = "C:\Windows\System32\drivers\etc\hosts"
-    WSLDist = "Ubuntu-22.04"
-    WSLCommand = "wsl -d Ubuntu-22.04 hostname -I"
+    # Leave WSLDist empty to use the default WSL distro.
+    # Set WSLDistPrompt to $true to choose from installed distros each time the script runs.
+    WSLDist = ""
+    WSLDistPrompt = $false
     Data = "\data\"
     UI = "\data\ui-elements\"
     Colors = "Colors.ps1"

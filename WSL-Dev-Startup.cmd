@@ -9,4 +9,4 @@
 ::   ("<ip>    <host>    # comment")
 ::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::::
 
-Powershell -File %~dp0\WSL-Dev-Startup.ps1
+Powershell -NoProfile -ExecutionPolicy Bypass -File "%~dp0\WSL-Dev-Startup.ps1"

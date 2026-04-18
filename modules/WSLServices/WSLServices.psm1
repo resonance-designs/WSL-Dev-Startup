@@ -1,9 +1,9 @@
 function StartWSLServices() {
     Write-Output $config.OneLine
     # Start Apache Service
-    wsl -d $config.WSLDist sudo service apache2 restart
+    wsl -d $config.WSLDist -u root -- service apache2 restart
     # Start MySQL Service
-    wsl -d $config.WSLDist sudo service mysql restart
+    wsl -d $config.WSLDist -u root -- service mysql restart
     Write-Output $config.TwoLines
     StyleOutput $config.SrvsStartMsg 0 "yes" $white $black
     StyleOutput $config.OKMsg 36 "no" $green $black

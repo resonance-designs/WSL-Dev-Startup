@@ -32,6 +32,67 @@ function Pause($msg, $padamt, $newline, $fcolor, $bcolor) {
     }
 }
 
+function GetInstalledWSLDistros() {
+    $distros = wsl.exe --list --quiet | ForEach-Object {
+        ($_ -replace "`0", "").Trim()
+    } | Where-Object {
+        $_ -and ($_ -notmatch "^docker-desktop(-data)?$")
+    }
+
+    return @($distros)
+}
+
+function GetDefaultWSLDistro() {
+    $defaultLine = wsl.exe --list --verbose | ForEach-Object {
+        $_ -replace "`0", ""
+    } | Where-Object {
+        $_ -match "^\s*\*"
+    } | Select-Object -First 1
+
+    if (-not $defaultLine) {
+        return $null
+    }
+
+    return (($defaultLine -replace "^\s*\*\s*", "") -split "\s{2,}")[0].Trim()
+}
+
+function ResolveWSLDistro([string]$ConfiguredDistro, [bool]$PromptForDistro) {
+    $distros = GetInstalledWSLDistros
+    if ($distros.Count -eq 0) {
+        throw "No WSL distributions are installed."
+    }
+
+    if (-not [string]::IsNullOrWhiteSpace($ConfiguredDistro)) {
+        if ($distros -contains $ConfiguredDistro) {
+            return $ConfiguredDistro
+        }
+
+        throw "Configured WSL distro '$ConfiguredDistro' was not found. Installed distros: $($distros -join ', ')"
+    }
+
+    if ($PromptForDistro -and $Host.Name -ne "ServerRemoteHost") {
+        Write-Host "Installed WSL distributions:"
+        for ($i = 0; $i -lt $distros.Count; $i++) {
+            Write-Host ("[{0}] {1}" -f ($i + 1), $distros[$i])
+        }
+
+        $selection = Read-Host "Select a distro number"
+        $index = 0
+        if ([int]::TryParse($selection, [ref]$index) -and $index -ge 1 -and $index -le $distros.Count) {
+            return $distros[$index - 1]
+        }
+
+        throw "Invalid WSL distro selection '$selection'."
+    }
+
+    $defaultDistro = GetDefaultWSLDistro
+    if ($defaultDistro -and ($distros -contains $defaultDistro)) {
+        return $defaultDistro
+    }
+
+    return $distros[0]
+}
+
 # Trouble-Shooting: Print host array output
 function PrintHostArray() {
     $hosts.ForEach({ $PSItem.Action + " " + $PSItem.Name + " " + $PSItem.IP})
@@ -40,3 +101,6 @@ function PrintHostArray() {
 Export-ModuleMember -Function 'SleepProgress'
 Export-ModuleMember -Function 'StyleOutput'
 Export-ModuleMember -Function 'Pause'
+Export-ModuleMember -Function 'GetInstalledWSLDistros'
+Export-ModuleMember -Function 'GetDefaultWSLDistro'
+Export-ModuleMember -Function 'ResolveWSLDistro'
