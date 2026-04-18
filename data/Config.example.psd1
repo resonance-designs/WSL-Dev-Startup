@@ -6,6 +6,7 @@
     WSLDist = ""
     WSLDistPrompt = $false
     Data = "\data\"
+    Backups = "\data\backups\"
     UI = "\data\ui-elements\"
     Colors = "Colors.ps1"
     HostParts = "\data\host-parts\"
@@ -23,6 +24,7 @@
     ExitMsg = " = Script execution finished successfully. Press any key to exit ="
     StartMsg = " * Script Started!"
     SrvsStartMsg = " * All WSL services were started. Resuming script in 3 seconds..."
+    BkpHostMsg = " * Backed up the Windows host file. Resuming script in 3 seconds..."
     NTCFGMsg = " * Applied network configuration changes. Resuming script in 3 seconds..."
     ClrHostMsg = " * Cleared out the contents of the Windows host file. Resuming script in 3 seconds..."
     ImpHeadMsg = " * Imported HeaderLocalhost.example.txt to Windows host file. Resuming script in 3 seconds..."

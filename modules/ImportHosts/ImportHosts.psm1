@@ -1,3 +1,21 @@
+function BackupHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
+    if (-not (Test-Path -Path $config.WinHostsFile)) {
+        throw "Windows hosts file was not found at '$($config.WinHostsFile)'."
+    }
+
+    $backup_dir = $PSScriptRoot + "\..\.." + $config.Backups
+    $backup_dir = [System.IO.Path]::GetFullPath($backup_dir)
+    New-Item -ItemType Directory -Path $backup_dir -Force | Out-Null
+
+    $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
+    $backup_file = Join-Path $backup_dir "hosts-$timestamp.bak"
+    Copy-Item -Path $config.WinHostsFile -Destination $backup_file -Force
+
+    StyleOutput $msg 0 "yes" $msg_fclr $msg_bclr
+    StyleOutput $config.OKMsg $space "no" $ok_fclr $ok_bclr
+    SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
+}
+
 function ClearHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
     # Clear out the hosts file
     Clear-Content $config.WinHostsFile
@@ -41,6 +59,7 @@ function ImportHostsArray($array, $msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, 
     SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
 }
 
+Export-ModuleMember -Function 'BackupHosts'
 Export-ModuleMember -Function 'ClearHosts'
 Export-ModuleMember -Function 'AddHostPart'
 Export-ModuleMember -Function 'AddWSLHost'

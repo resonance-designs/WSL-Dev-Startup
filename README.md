@@ -20,6 +20,12 @@ The script must run elevated because it writes to:
 C:\Windows\System32\drivers\etc\hosts
 ```
 
+Before rebuilding that file, each run creates a timestamped backup under:
+
+```text
+data\backups
+```
+
 and because it updates Windows portproxy rules with:
 
 ```powershell
@@ -104,6 +110,7 @@ Important values:
 * `WSLDist`: WSL distribution name. Leave empty to use the default WSL distro.
 * `WSLDistPrompt`: set to `$true` to choose from installed distros each time the script runs.
 * `WinHostsFile`: path to the Windows hosts file.
+* `Backups`: folder where timestamped hosts-file backups are written.
 * `ApacheIP`, `NginxIP`, `MERNIP`: stable local listen IPs for portproxy.
 * `ApachePort`, `NginxPort`, `MERNPort`: WSL service ports to forward to.
 * `HeaderLocalhost`, `HostsArray`, `SoftwareBlocks`, `AdBlocks`: host-part files used to rebuild the hosts file.

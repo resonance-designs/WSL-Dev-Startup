@@ -31,6 +31,8 @@ Clear-Host
 StyleOutput $config.StartMsg 0 "no" $green $black
 # Start WSL Services
 StartWSLServices # This function is defined in the WSLServices module
+# Backup Windows Host File
+BackupHosts $config.BkpHostMsg $white $black 24 $green $black 3 $config.BkpHostMsg $black $green # This function is defined in the ImportHosts module
 # Clear Windows Host File
 ClearHosts $config.ClrHostMsg $white $black 16 $green $black 3 $config.ClrHostMsg $black $green # This function is define in the ImportHosts module
 # Import Hosts
