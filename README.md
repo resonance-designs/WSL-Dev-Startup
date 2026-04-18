@@ -1,124 +1,264 @@
 # WSL-Dev-Startup
-A PowerShell script to start WSL services, build the Windows hosts file using various resources, and run network configuration tasks.
 
-> [!WARNING]
-> This script builds the Windows host file from scratch, clearing out anything currently in it before building it, it does not append to whatever is already contained within it. Please backup your Windows hosts file somewhere safe and make sure to fully read this documentation before attempting to run this script. You can inject what is currently in your hosts file as part of the build process. You will learn more on how that works later, in the <strong>"Explanation of Files and Folders"</strong> section.
+![Static Badge](https://img.shields.io/badge/Version-0.2.0-orange)
+![Static Badge](https://img.shields.io/badge/Release-v0.2.0-green)
+
+A PowerShell startup script for a Windows + WSL local development environment. It starts WSL services, rebuilds the Windows hosts file from configured source blocks, imports enabled Apache virtual hosts, and refreshes Windows `netsh interface portproxy` mappings so stable local IPs can forward traffic into WSL.
+
+## What It Does
+
+Each run performs this sequence:
+
+1. Resolve the target WSL distro.
+2. Restart Apache and MySQL inside that distro.
+3. Back up the current Windows hosts file.
+4. Rebuild the Windows hosts file from configured host-part files.
+5. Optionally import enabled Apache `ServerName` and `ServerAlias` values from WSL.
+6. Refresh portproxy rules for Apache, Nginx, MERN, and Rails.
+
+The hosts file is rebuilt from scratch, but the script now creates a timestamped backup first:
+
+```text
+data\backups\hosts-YYYYMMDD-HHMMSS.bak
+```
+
+Generated backups are ignored by Git.
 
 ## Prerequisites
-These instructions and the script itself assumes you have WSL2 installed on your Windows machine and the out-of-the-box configuration and examples contained in the script assume a Debian-based distribution for WSL, specifically Ubuntu 22.04, with a LAMP stack installed in that distribution. All of that won't be covered here but you can check out my thorough [WSL Local Development Environment Setup Guide](https://gist.github.com/resonancedesigns/85e4a30a2754bbb394eafa3d39792d16) to walk you through the entire process. 
 
-In order for this script to work, there are a couple things that we need to make sure are configured correctly in WSL and Windows.
+This project assumes:
 
-1.	**Remove password requirement for specific service commands in WSL.** This lets WSL services start when Windows boots without waiting for input from the user for the users password. You probably wouldn't want that in a production environment, but it's perfectly fine in your local WSL dev environment. To achieve this you need to edit your **<code>/etc/sudoers</code>** file in your WSL distro by adding the following lines at the bottom:
+* Windows with WSL2 installed.
+* A Debian-based WSL distribution. The default config auto-selects your default WSL distro.
+* Apache and MySQL installed in that WSL distribution.
+* An elevated Windows PowerShell session, or a Scheduled Task configured to run with highest privileges.
 
-        %sudo   ALL=(ALL) NOPASSWD: /usr/sbin/service apache2 restart
-        %sudo   ALL=(ALL) NOPASSWD: /usr/sbin/service mysql restart
+The script must run elevated because it writes to:
 
-2.	**Enable script execution with a policy to allow all scripts in the Windows Group Policy Editor.** You may or may not need to do this but you can go through these steps to see if the group policy is already set and adjust accordingly. In a work environment you may need to go through your IT security team to enable this.  
+```text
+C:\Windows\System32\drivers\etc\hosts
+```
 
-	1.	Run (**<code>Win + R</code>**) **<code>gpedit.msc</code>** and navigate to:
+and updates Windows portproxy rules with:
 
-			Computer Configuration
-	        |-- Administrative Templates
-	            |-- Windows Components
-	                |-- Windows PowerShell
-	2.	Double-click on "Turn on Script Execution"
-	3.	Select "Enabled"
-	4.	Set "Allow all scripts" under Options->Execution Policy
-	5.	Click "Apply"
-	6.	Click "OK"
+```powershell
+netsh interface portproxy
+```
 
-	For a more thorough examination of this process and why it may be required, see [this answer](https://stackoverflow.com/questions/27753917/how-do-you-successfully-change-execution-policy-and-enable-execution-of-powershe#answer-27755459) on [stackoverflow.com](https://stackoverflow.com).
-    
-## Installation
-1.	Clone this repository to a location of your choosing (e.g C:\Dev\Scripts\PS\WSL-Dev-Startup) using the git command: 
+The script starts WSL services as WSL `root`, so `/etc/sudoers` `NOPASSWD` entries are not required for the default Apache/MySQL restart commands.
 
-		git clone https://github.com/resonance-designs/WSL-Dev-Startup
+## Manual Run
 
-2.	Create a new task using Windows Task Scheduler <br>
-	1.	Run (**<code>Win + R</code>**) **<code>taskschd.msc</code>**.
-	2.	Right-click on "Task Scheduler Library" then click "New Folder..." and name it whatever you like (e.g Scripts).
-	3.	Right-click on the folder you just created and click "Create Task..." (**not** "Create Basic Task...").
-	4.	Under the "General" tab enter a name (e.g WSL-Dev-Startup) and description of your choosing.
-	5.	Click the check-box "Run with highest privileges".
-	6.	Select your target operating system on the "Configure for:" drop-down (e.g Windows 10).
-	7.	Switch over to the "Triggers" tab and click "New..."
-	8.	Select "At log on" from the "Begin the task:" drop-down.
-	9.	Select the user you want this task to run under or select "Any user" if you intend to run this script as any user.
-	10.	Click "OK".
-	11.	Switch over to the "Actions" tab and click "New..."
-	12.	The "Action:" should be "Start a program" in the drop-down.
-	13.	Click "Browse..." to navigate to the folder where you cloned the repository and select the **<code>wsl\_dev\_startup.cmd</code>** file.
-	14.	Click "OK".
-	15.	Swith over to the "Conditions" tab and uncheck "Stop if the computer switches to battery power" and then "Start the task only if the computer is on AC power"
-	16.	Click "OK".
-	
-	You have successfully created the startup task for the script. 
+Open Windows PowerShell or Command Prompt as Administrator, then run:
 
-3.	Create a shortcut to manually start the task. This is optional but is recommended if you want to make it easily accessible to run the script again in a current session. <br>
-	To achieve this, you need to:
+```powershell
+& "C:\Scripts\WSL-Dev-Startup\WSL-Dev-Startup.cmd"
+```
 
-	1. Right-click on an empty section of your desktop and select New->Shortcut
-	2. Enter the following into the item location, making sure to replace **Scripts** and **WSL-Dev-Startup** with the folder name and task name you used when creating the task earlier:
+The `.cmd` launcher runs:
 
-			schtasks /run /tn "Scripts\WSL-Dev-Startup"
-	3. Click "Next"
-	4. Give the shortcut a name and click "Finish"
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File WSL-Dev-Startup.ps1 -PauseOnExit
+```
 
-	Now you can copy or pin this shortcut to wherever you like, such as your start menu or task bar, to easily launch the script.
+Manual runs pause at the end. On success, the script shows a green framed message. On failure, it shows red unframed error text with possible causes and fixes.
 
-## Explanation of Files and Folders
-Let's briefly go over the purpose of the folders and files the script utilizes.
+## Scheduled Startup
 
-### <code>root</code>
-The root contains the two main script files that launch the script (**<code>wsl\_dev\_startup.cmd</code>**) and run it's commands (**<code>wsl\_dev\_startup.ps1</code>**).
+For scheduled startup, call the PowerShell script directly so the task can finish without waiting for a keypress:
 
-### <code>\host-parts</code>
-The **<code>\host-parts</code>** folder contains all the "parts" or "blocks" used to build the Windows hosts file, which is typically located at **<code>C:\Windows\System32\drivers\etc\hosts</code>**. These parts are injected into the Windows hosts file in sequence. These files can be whatever you want so long as they match what is defined in the **<code>\includes\variable-definitions.ps1</code>** file which we will get to soon.
-In this repo you will find a few examples included in this folder:
+```powershell
+$action = New-ScheduledTaskAction `
+  -Execute "powershell.exe" `
+  -Argument '-NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\WSL-Dev-Startup\WSL-Dev-Startup.ps1"' `
+  -WorkingDirectory "C:\Scripts\WSL-Dev-Startup"
 
-*	**<code>ad-blocks.example.txt</code>**
-*	**<code>HeaderLocalhost.example.txt</code>**
-*	**<code>host-array.example.ps1</code>**
-*	**<code>software-blocks.example.txt</code>**
+$trigger = New-ScheduledTaskTrigger -AtLogOn
 
-The text files contain chunks of a hosts file that you want copied over to the Windows hosts file. The **<code>host-array.example.ps1</code>** contains an object array consisting of hosts (typically virtual hosts/sites configured in your Apache and/or Nginx web servers) that you want to map to the WSL IP. You can use this array to specify comment lines as well. 
+$principal = New-ScheduledTaskPrincipal `
+  -UserId $env:USERNAME `
+  -LogonType Interactive `
+  -RunLevel Highest
 
-### <code>\includes</code>
-The **<code>\includes</code>** folder contains various functions, utilities, configurations, and services. We'll go through the purpose of each of them:
+$settings = New-ScheduledTaskSettingsSet `
+  -AllowStartIfOnBatteries `
+  -DontStopIfGoingOnBatteries `
+  -ExecutionTimeLimit (New-TimeSpan -Minutes 30)
 
-#### <code>colors.ps1</code>
-This file runs the commands necessary to build the Windows host file. Certain parameters of these commands need to match your configurations and variable values. You can use this file as a guide and remove or add commands to fit your needs.
+Register-ScheduledTask `
+  -TaskPath "\Scripts\" `
+  -TaskName "WSL-Dev-Startup" `
+  -Action $action `
+  -Trigger $trigger `
+  -Principal $principal `
+  -Settings $settings `
+  -Description "Start WSL development services, rebuild hosts, and refresh portproxy mappings." `
+  -Force
+```
 
-#### <code>import-hosts.ps1</code>
-This file runs the commands necessary to build the Windows host file. Certain parameters of these commands need to match your configurations and variable values. You can use this file as a guide and remove or add commands to fit your needs.
+To update an existing task action:
 
-#### <code>network-config.ps1</code>
-This file serves to add network configurations to the environment. I currently have two commands in this file that uses **<code>netsh</code>** to assign static IP's for the Apache and Nginx servers in the WSL distro via proxy service. This is useful for running multiple apps using different services over different IP's.
+```powershell
+Set-ScheduledTask -TaskPath "\Scripts\" -TaskName "WSL-Dev-Startup" -Action $action
+```
 
-#### <code>utilities.ps1</code>
-This file contains a small collection of utilities used throughout the script. The included functions so far include:
+To run the task manually:
 
-*	**<code>SleepProgress</code>**: Displays a progress bar which can be set to a time in seconds.
-*	**<code>StyleOutput</code>**: Specify styling of the terminal output.
-*	**<code>Pause</code>**: Creates a "pause" that waits for a user key-press before continuing to the next line of the script, similar to that found in MSDOS, with customizable output message.
-*	**<code>PrintHostArray</code>**: A trouble-shooting utility to display the values of the **<code>host-array.example.ps1</code>** file. 
+```powershell
+Start-ScheduledTask -TaskPath "\Scripts\" -TaskName "WSL-Dev-Startup"
+```
 
-#### <code>variable-definitions.ps1</code>
-This file contains variables for paths, files, arrays, and string used in various configurations and functions that are frequently used throughout the script. There is only one variable that is defined outside of this script, and that is the **<code>$incs_path</code>** variable which is required by the root **<code>wsl\_dev\_startup.ps1</code>** file before we can import this **<code>variable-definitions.ps1</code>** file.
+## Configuration
 
-#### <code>wsl-hosts.ps1</code>
-This contains functions for adding and removing hosts to the Windows hosts file that are mapped to either the native WSL distro IP or to the static IP's defined in the **<code>network-config.ps1</code>** file mentioned earlier. The host values used by these functions are stored in an object array defined in the  **<code>\host-parts\host-array.example.ps1</code>** file.
+The main config file is:
 
-#### <code>wsl-services.ps1</code>
-This file contains the commands to start the needed WSL services. Currently the only services included in this file are Apache and MySQL. 
+```text
+data\Config.example.psd1
+```
 
----
+Important values:
 
-#### Notes
-*	Use the example files and the comments found throughout the source-code to better understand how these files work together.
+* `WSLDist`: WSL distribution name. Leave empty to use the default WSL distro.
+* `WSLDistPrompt`: set to `$true` to choose from installed distros each time the script runs.
+* `WinHostsFile`: path to the Windows hosts file.
+* `Backups`: folder where timestamped hosts-file backups are written.
+* `PauseOnExit`: default pause behavior for direct `.ps1` runs. The `.cmd` launcher also passes `-PauseOnExit`.
+* `ImportApacheVHosts`: set to `$true` to add enabled Apache `ServerName` and `ServerAlias` values from WSL.
+* `ApacheIP`, `NginxIP`, `MERNIP`, `RailsIP`: stable local listen IPs for portproxy.
+* `ApachePort`, `NginxPort`, `MERNPort`, `RailsPort`: WSL service ports to forward to.
+* `HeaderLocalhost`, `HostsArray`, `SoftwareBlocks`, `AdBlocks`: host-part files used to rebuild the hosts file.
 
-## Planned Features/Updates
-*	Replacing "dot sourced" include files with custom PowerShell modules that include additional functions. 
-*	Improving upon the source-code comments.
-*	More WSL services in **<code>wsl-services.ps1</code>**
+### WSL Distro Selection
+
+The default configuration is:
+
+```powershell
+WSLDist = ""
+WSLDistPrompt = $false
+```
+
+With those values, the script uses the default distro reported by WSL. This is the best setting for Scheduled Task startup because it does not wait for input.
+
+To pin the script to a specific distro:
+
+```powershell
+WSLDist = "Ubuntu"
+WSLDistPrompt = $false
+```
+
+To choose from installed distros during manual runs:
+
+```powershell
+WSLDist = ""
+WSLDistPrompt = $true
+```
+
+Check installed distro names with:
+
+```powershell
+wsl -l -v
+```
+
+## File Layout
+
+The project root contains:
+
+* `WSL-Dev-Startup.cmd`: manual launcher that pauses on success/failure.
+* `WSL-Dev-Startup.ps1`: main script.
+* `README.md`: this documentation.
+
+The `data` folder contains:
+
+* `Config.example.psd1`: central configuration.
+* `host-parts/`: files used to rebuild the Windows hosts file.
+* `ui-elements/Colors.ps1`: terminal color variables.
+* `backups/`: runtime hosts-file backups. This folder is ignored by Git.
+
+The `modules` folder contains:
+
+* `Utilities/Utilities.psm1`: output styling, progress display, distro selection, and pause handling.
+* `WSLServices/WSLServices.psm1`: restarts Apache and MySQL inside the resolved WSL distro.
+* `ImportHosts/ImportHosts.psm1`: backs up, clears, and rebuilds the Windows hosts file.
+* `NetConfig/NetConfig.psm1`: detects the current WSL IP and refreshes portproxy mappings.
+
+## Host Parts
+
+The host-part files are written to the Windows hosts file in this order:
+
+1. `HeaderLocalhost.example.txt`
+2. `HostArray.example.ps1`
+3. Enabled Apache vhosts, when `ImportApacheVHosts = $true`
+4. `SoftwareBlocks.example.txt`
+5. `AdBlocks.example.txt`
+
+`HostArray.example.ps1` defines a `$hosts` array. Each object currently uses `Action = 'add'`, plus a `Name` and `IP`. Blank `Name` values can be used for comment/header lines.
+
+When `ImportApacheVHosts` is enabled, the script reads:
+
+```text
+/etc/apache2/sites-enabled
+```
+
+Any enabled Apache `ServerName` or `ServerAlias` values are written to the Windows hosts file using `ApacheIP`. Keep `HostArray.example.ps1` for manual entries, non-Apache apps, blocked hosts, or names that do not appear in Apache vhost config.
+
+## Network Behavior
+
+`NetConfig.psm1` deletes and recreates the configured portproxy rules each time the script runs. This matters because WSL2 IP addresses can change between sessions.
+
+The default mappings are:
+
+```text
+127.65.43.21:80 -> <current WSL IP>:80
+127.65.43.22:80 -> <current WSL IP>:81
+127.65.43.23:80 -> <current WSL IP>:3000
+127.65.43.24:80 -> <current WSL IP>:10524
+```
+
+To inspect all portproxy rules:
+
+```powershell
+netsh interface portproxy show all
+```
+
+To remove all portproxy rules:
+
+```powershell
+netsh interface portproxy reset
+```
+
+Only use `reset` if you do not need any existing portproxy rules.
+
+## Troubleshooting
+
+If the script exits immediately with an Administrator error, reopen PowerShell or Command Prompt using **Run as administrator**.
+
+If service startup fails, confirm the configured distro exists:
+
+```powershell
+wsl -l -v
+```
+
+Then check services inside WSL:
+
+```powershell
+wsl -d <distro> -- service apache2 status
+wsl -d <distro> -- service mysql status
+```
+
+If host writes fail, close editors or security tools that may temporarily lock:
+
+```text
+C:\Windows\System32\drivers\etc\hosts
+```
+
+If DNS resolution seems stale after a host rebuild:
+
+```powershell
+ipconfig /flushdns
+```
+
+If portproxy output contains old malformed values such as `System.Collections.Hashtable.ApacheIP`, remove those rules or reset portproxy, then rerun the script.
+
+## Notes
+
+The example files are intentionally editable. Update the config and host-part files to match your WSL distro name, local domains, service ports, and desired host blocks.

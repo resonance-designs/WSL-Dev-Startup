@@ -1,13 +1,17 @@
 @{
     Modules = "\modules"
     WinHostsFile = "C:\Windows\System32\drivers\etc\hosts"
-    WSLDist = "Ubuntu-22.04"
-    WSLCommand = "wsl -d Ubuntu-22.04 hostname -I"
+    # Leave WSLDist empty to use the default WSL distro.
+    # Set WSLDistPrompt to $true to choose from installed distros each time the script runs.
+    WSLDist = ""
+    WSLDistPrompt = $false
     Data = "\data\"
+    Backups = "\data\backups\"
     UI = "\data\ui-elements\"
     Colors = "Colors.ps1"
     HostParts = "\data\host-parts\"
     HostsArray = "HostArray.example.ps1"
+    ImportApacheVHosts = $true
     HeaderLocalhost = "HeaderLocalhost.example.txt"
     SoftwareBlocks = "SoftwareBlocks.example.txt"
     AdBlocks = "AdBlocks.example.txt"
@@ -19,19 +23,22 @@
     ExitDec = " ================================================================="
     ContMsg = " = Press any key to continue ="
     ExitMsg = " = Script execution finished successfully. Press any key to exit ="
+    PauseOnExit = $false
     StartMsg = " * Script Started!"
     SrvsStartMsg = " * All WSL services were started. Resuming script in 3 seconds..."
+    BkpHostMsg = " * Backed up the Windows host file. Resuming script in 3 seconds..."
     NTCFGMsg = " * Applied network configuration changes. Resuming script in 3 seconds..."
     ClrHostMsg = " * Cleared out the contents of the Windows host file. Resuming script in 3 seconds..."
     ImpHeadMsg = " * Imported HeaderLocalhost.example.txt to Windows host file. Resuming script in 3 seconds..."
     ImpSoftMsg = " * Imported SofwareBlocks.example.txt to Windows host file. Resuming script in 3 seconds..."
     ImpAdsMsg = " * Imported AdBlocks.example.txt to Windows host file. Resuming script in 3 seconds..."
     ImpWSLMsg = " * Imported the WSL virtual hosts. Resuming script in 3 seconds..."
+    ImpApacheVHostsMsg = " * Imported enabled Apache virtual hosts. Resuming script in 3 seconds..."
     OKMsg = "[ OK ]"
     ApacheIP = "127.65.43.21"
     NginxIP = "127.65.43.22"
     MERNIP = "127.65.43.23"
-    RailsIP = "0.0.0.0"
+    RailsIP = "127.65.43.24"
     ApachePort = "80"
     NginxPort = "81"
     RailsPort = "10524"
