@@ -11,26 +11,38 @@ function BackupHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $ti
     $backup_file = Join-Path $backup_dir "hosts-$timestamp.bak"
     Copy-Item -Path $config.WinHostsFile -Destination $backup_file -Force
 
-    StyleOutput $msg 0 "yes" $msg_fclr $msg_bclr
-    StyleOutput $config.OKMsg $space "no" $ok_fclr $ok_bclr
+    WriteStepSuccess $msg $msg_fclr $msg_bclr $ok_fclr $ok_bclr
     SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
+}
+
+function WriteHostFile($content) {
+    $text = ($content | Where-Object { $null -ne $_ }) -join [Environment]::NewLine
+    [System.IO.File]::WriteAllText($config.WinHostsFile, $text + [Environment]::NewLine, [System.Text.Encoding]::UTF8)
+}
+
+function AppendHostFile($content) {
+    $text = ($content | Where-Object { $null -ne $_ }) -join [Environment]::NewLine
+    if ([string]::IsNullOrEmpty($text)) {
+        return
+    }
+
+    [System.IO.File]::AppendAllText($config.WinHostsFile, $text + [Environment]::NewLine, [System.Text.Encoding]::UTF8)
 }
 
 function ClearHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
     # Clear out the hosts file
-    Clear-Content $config.WinHostsFile
-    StyleOutput $msg 0 "yes" $msg_fclr $msg_bclr
-    StyleOutput $config.OKMsg $space "no" $ok_fclr $ok_bclr
+    WriteHostFile @()
+    WriteStepSuccess $msg $msg_fclr $msg_bclr $ok_fclr $ok_bclr
     SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
 }
 
 function AddHostPart($file) {
-    $host_part = Get-Content -Path $host_parts"$file"
-    Add-Content -Path $config.WinHostsFile -Value $host_part
+    $host_part = Get-Content -Path $host_parts"$file" -ErrorAction Stop
+    AppendHostFile $host_part
 }
 
 function AddWSLHost($filename) {
-    Add-Content -Path $filename -Value $hosts.ForEach({$PSItem.IP + "`t`t`t" + $PSItem.Name})
+    AppendHostFile $hosts.ForEach({$PSItem.IP + "`t`t`t" + $PSItem.Name})
 }
 
 function GetApacheVHosts() {
@@ -65,44 +77,50 @@ function GetApacheVHosts() {
 
 function ImportApacheVHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
     $apache_hosts = GetApacheVHosts
-    if ($apache_hosts.Count -gt 0) {
-        Add-Content -Path $config.WinHostsFile -Value "# Apache Virtual Hosts"
-        Add-Content -Path $config.WinHostsFile -Value $apache_hosts.ForEach({$config.ApacheIP + "`t`t`t" + $PSItem})
+    $existing_hosts = @()
+    if (Test-Path -Path $config.WinHostsFile) {
+        $existing_hosts = Get-Content -Path $config.WinHostsFile | ForEach-Object {
+            $line = ($_ -split "#")[0].Trim()
+            if ($line) {
+                ($line -split "\s+")[-1]
+            }
+        }
     }
 
-    StyleOutput $msg 0 "yes" $msg_fclr $msg_bclr
-    StyleOutput $config.OKMsg $space "no" $ok_fclr $ok_bclr
+    $apache_hosts = @($apache_hosts | Where-Object { $existing_hosts -notcontains $_ })
+    if ($apache_hosts.Count -gt 0) {
+        AppendHostFile "# Apache Virtual Hosts"
+        AppendHostFile $apache_hosts.ForEach({$config.ApacheIP + "`t`t`t" + $PSItem})
+    }
+
+    WriteStepSuccess $msg $msg_fclr $msg_bclr $ok_fclr $ok_bclr
     SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
 }
 
 function ImportHostsPart($part, $msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
     # Import the header and localhost definition
     AddHostPart $part
-    StyleOutput $msg 0 "yes" $msg_fclr $msg_bclr
-    StyleOutput $config.OKMsg $space "no" $ok_fclr $ok_bclr
+    WriteStepSuccess $msg $msg_fclr $msg_bclr $ok_fclr $ok_bclr
     SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
 }
 
 function ImportHostsArray($array, $msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
-    try {
-        . $host_parts"$array"
-        $invalidHosts = $hosts | Where-Object { $_.Action -ne "add" }
-        if (-not $invalidHosts) {
-            AddWSLHost $config.WinHostsFile
-        } else {
-            throw "Invalid operation in hosts array - only 'add' is currently supported."
-        }
-    } catch  {
-        Write-Host $error[0]
-        Write-Host "`nUsage: hosts add <ip> <hostname>`n       hosts remove <hostname>`n       hosts show"
+    . $host_parts"$array"
+    $invalidHosts = $hosts | Where-Object { $_.Action -ne "add" }
+    if (-not $invalidHosts) {
+        AddWSLHost $config.WinHostsFile
+    } else {
+        throw "Invalid operation in hosts array - only 'add' is currently supported."
     }
-    StyleOutput $msg 0 "yes" $msg_fclr $msg_bclr
-    StyleOutput $config.OKMsg $space "no" $ok_fclr $ok_bclr
+
+    WriteStepSuccess $msg $msg_fclr $msg_bclr $ok_fclr $ok_bclr
     SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
 }
 
 Export-ModuleMember -Function 'BackupHosts'
 Export-ModuleMember -Function 'ClearHosts'
+Export-ModuleMember -Function 'WriteHostFile'
+Export-ModuleMember -Function 'AppendHostFile'
 Export-ModuleMember -Function 'AddHostPart'
 Export-ModuleMember -Function 'AddWSLHost'
 Export-ModuleMember -Function 'GetApacheVHosts'

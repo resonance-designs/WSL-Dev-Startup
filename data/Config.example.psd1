@@ -23,6 +23,7 @@
     ExitDec = " ================================================================="
     ContMsg = " = Press any key to continue ="
     ExitMsg = " = Script execution finished successfully. Press any key to exit ="
+    PauseOnExit = $false
     StartMsg = " * Script Started!"
     SrvsStartMsg = " * All WSL services were started. Resuming script in 3 seconds..."
     BkpHostMsg = " * Backed up the Windows host file. Resuming script in 3 seconds..."
@@ -37,7 +38,7 @@
     ApacheIP = "127.65.43.21"
     NginxIP = "127.65.43.22"
     MERNIP = "127.65.43.23"
-    RailsIP = "0.0.0.0"
+    RailsIP = "127.65.43.24"
     ApachePort = "80"
     NginxPort = "81"
     RailsPort = "10524"

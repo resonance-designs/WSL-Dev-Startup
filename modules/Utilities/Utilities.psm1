@@ -20,6 +20,31 @@ function StyleOutput([string]$msg, $padamt, $newline, $fcolor, $bcolor){
     }
 }
 
+function WriteStepSuccess([string]$msg, $msg_fclr, $msg_bclr, $ok_fclr, $ok_bclr) {
+    $status = if ($global:config -and $global:config.OKMsg) { $global:config.OKMsg } else { "[ OK ]" }
+    $statusColumn = 88
+
+    try {
+        $windowWidth = $Host.UI.RawUI.WindowSize.Width
+        if ($windowWidth -gt 50) {
+            $statusColumn = [Math]::Max(40, $windowWidth - $status.Length - 4)
+        }
+    } catch {
+        $statusColumn = 88
+    }
+
+    $padding = [Math]::Max(1, $statusColumn - $msg.Length)
+    Write-Host ($msg + (" " * $padding)) -NoNewline -ForegroundColor $msg_fclr -BackgroundColor $msg_bclr
+    Write-Host $status -ForegroundColor $ok_fclr -BackgroundColor $ok_bclr
+}
+
+function WriteSuccessFrame([string]$msg, $fcolor, $bcolor) {
+    $line = "=" * $msg.Length
+    Write-Host $line -ForegroundColor $fcolor -BackgroundColor $bcolor
+    Write-Host $msg -ForegroundColor $fcolor -BackgroundColor $bcolor
+    Write-Host $line -ForegroundColor $fcolor -BackgroundColor $bcolor
+}
+
 # Pause for user input with custom message
 function Pause($msg, $padamt, $newline, $fcolor, $bcolor) {
     # Check if running Powershell ISE
@@ -100,6 +125,8 @@ function PrintHostArray() {
 }
 Export-ModuleMember -Function 'SleepProgress'
 Export-ModuleMember -Function 'StyleOutput'
+Export-ModuleMember -Function 'WriteStepSuccess'
+Export-ModuleMember -Function 'WriteSuccessFrame'
 Export-ModuleMember -Function 'Pause'
 Export-ModuleMember -Function 'GetInstalledWSLDistros'
 Export-ModuleMember -Function 'GetDefaultWSLDistro'
