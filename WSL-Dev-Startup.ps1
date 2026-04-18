@@ -38,6 +38,9 @@ ClearHosts $config.ClrHostMsg $white $black 16 $green $black 3 $config.ClrHostMs
 # Import Hosts
 ImportHostsPart $config.HeaderLocalhost $config.ImpHeadMsg $white $black 8 $green $black 3 $config.ImpHeadMsg $black $green # This function is defined in the ImportHosts module
 ImportHostsArray $config.HostsArray $config.ImpWSLMsg $white $black 35 $green $black 3 $config.ImpWSLMsg $black $green # This function is defined in the ImportHosts module
+if ($config.ImportApacheVHosts) {
+    ImportApacheVHosts $config.ImpApacheVHostsMsg $white $black 21 $green $black 3 $config.ImpApacheVHostsMsg $black $green # This function is defined in the ImportHosts module
+}
 ImportHostsPart $config.SoftwareBlocks $config.ImpSoftMsg $white $black 10 $green $black 3 $config.ImpSoftMsg $black $green 
 ImportHostsPart $config.AdBlocks $config.ImpAdsMsg $white $black 15 $green $black 3 $config.ImpAdsMsg $black $green 
 # Set Network Configuration

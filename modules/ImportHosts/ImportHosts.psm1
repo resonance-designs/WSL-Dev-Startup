@@ -33,6 +33,48 @@ function AddWSLHost($filename) {
     Add-Content -Path $filename -Value $hosts.ForEach({$PSItem.IP + "`t`t`t" + $PSItem.Name})
 }
 
+function GetApacheVHosts() {
+    $raw_hosts = wsl.exe -d $config.WSLDist -- sh -lc "grep -hRE '^[[:space:]]*(ServerName|ServerAlias)[[:space:]]+' /etc/apache2/sites-enabled/* 2>/dev/null || true"
+    $apache_hosts = @()
+
+    foreach ($line in $raw_hosts) {
+        $clean_line = ($line -split "#")[0].Trim()
+        if (-not $clean_line) {
+            continue
+        }
+
+        $parts = $clean_line -split "\s+"
+        if ($parts.Count -lt 2) {
+            continue
+        }
+
+        $directive = $parts[0]
+        if ($directive -ne "ServerName" -and $directive -ne "ServerAlias") {
+            continue
+        }
+
+        foreach ($host_name in $parts[1..($parts.Count - 1)]) {
+            if ($host_name -and $host_name -notmatch "\*") {
+                $apache_hosts += $host_name
+            }
+        }
+    }
+
+    return @($apache_hosts | Sort-Object -Unique)
+}
+
+function ImportApacheVHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
+    $apache_hosts = GetApacheVHosts
+    if ($apache_hosts.Count -gt 0) {
+        Add-Content -Path $config.WinHostsFile -Value "# Apache Virtual Hosts"
+        Add-Content -Path $config.WinHostsFile -Value $apache_hosts.ForEach({$config.ApacheIP + "`t`t`t" + $PSItem})
+    }
+
+    StyleOutput $msg 0 "yes" $msg_fclr $msg_bclr
+    StyleOutput $config.OKMsg $space "no" $ok_fclr $ok_bclr
+    SleepProgress $time $sleep_msg $sleep_fclr $sleep_bclr
+}
+
 function ImportHostsPart($part, $msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
     # Import the header and localhost definition
     AddHostPart $part
@@ -63,5 +105,7 @@ Export-ModuleMember -Function 'BackupHosts'
 Export-ModuleMember -Function 'ClearHosts'
 Export-ModuleMember -Function 'AddHostPart'
 Export-ModuleMember -Function 'AddWSLHost'
+Export-ModuleMember -Function 'GetApacheVHosts'
+Export-ModuleMember -Function 'ImportApacheVHosts'
 Export-ModuleMember -Function 'ImportHostsPart'
 Export-ModuleMember -Function 'ImportHostsArray'

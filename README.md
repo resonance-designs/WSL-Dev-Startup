@@ -111,6 +111,7 @@ Important values:
 * `WSLDistPrompt`: set to `$true` to choose from installed distros each time the script runs.
 * `WinHostsFile`: path to the Windows hosts file.
 * `Backups`: folder where timestamped hosts-file backups are written.
+* `ImportApacheVHosts`: set to `$true` to add enabled Apache `ServerName` and `ServerAlias` values from the resolved WSL distro.
 * `ApacheIP`, `NginxIP`, `MERNIP`: stable local listen IPs for portproxy.
 * `ApachePort`, `NginxPort`, `MERNPort`: WSL service ports to forward to.
 * `HeaderLocalhost`, `HostsArray`, `SoftwareBlocks`, `AdBlocks`: host-part files used to rebuild the hosts file.
@@ -174,6 +175,14 @@ The host-part files are written to the Windows hosts file in this order:
 4. `AdBlocks.example.txt`
 
 `HostArray.example.ps1` defines a `$hosts` array. Each object currently uses `Action = 'add'`, plus a `Name` and `IP`. Blank `Name` values can be used for comment/header lines.
+
+When `ImportApacheVHosts` is enabled, the script also reads enabled Apache vhost files from the resolved WSL distro:
+
+```text
+/etc/apache2/sites-enabled
+```
+
+Any `ServerName` or `ServerAlias` values found there are written to the Windows hosts file using `ApacheIP`. Keep `HostArray.example.ps1` for manual entries, non-Apache apps, blocked hosts, or names that do not appear in Apache vhost config.
 
 ### modules
 

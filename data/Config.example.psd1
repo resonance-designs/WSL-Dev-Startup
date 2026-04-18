@@ -11,6 +11,7 @@
     Colors = "Colors.ps1"
     HostParts = "\data\host-parts\"
     HostsArray = "HostArray.example.ps1"
+    ImportApacheVHosts = $true
     HeaderLocalhost = "HeaderLocalhost.example.txt"
     SoftwareBlocks = "SoftwareBlocks.example.txt"
     AdBlocks = "AdBlocks.example.txt"
@@ -31,6 +32,7 @@
     ImpSoftMsg = " * Imported SofwareBlocks.example.txt to Windows host file. Resuming script in 3 seconds..."
     ImpAdsMsg = " * Imported AdBlocks.example.txt to Windows host file. Resuming script in 3 seconds..."
     ImpWSLMsg = " * Imported the WSL virtual hosts. Resuming script in 3 seconds..."
+    ImpApacheVHostsMsg = " * Imported enabled Apache virtual hosts. Resuming script in 3 seconds..."
     OKMsg = "[ OK ]"
     ApacheIP = "127.65.43.21"
     NginxIP = "127.65.43.22"
