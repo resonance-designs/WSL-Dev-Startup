@@ -1,5 +1,8 @@
 # WSL-Dev-Startup
 
+![Static Badge](https://img.shields.io/badge/Version-0.2.0-orange)
+![Static Badge](https://img.shields.io/badge/Release-v0.2.0-green)
+
 A PowerShell startup script for a Windows + WSL local development environment. It starts WSL services, rebuilds the Windows hosts file from configured source blocks, imports enabled Apache virtual hosts, and refreshes Windows `netsh interface portproxy` mappings so stable local IPs can forward traffic into WSL.
 
 ## What It Does
