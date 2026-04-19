@@ -96,10 +96,13 @@ function Invoke-SelfElevated {
         $arguments += "-NoStartupTask"
     }
 
-    $arguments += "-PauseOnExit"
+    if ($PauseOnExit) {
+        $arguments += "-PauseOnExit"
+    }
 
     Write-Host "Administrator privileges are required. Requesting elevation..." -ForegroundColor Yellow
-    Start-Process -FilePath (Get-CurrentPowerShellPath) -ArgumentList ($arguments -join " ") -WorkingDirectory $PSScriptRoot -Verb RunAs
+    $process = Start-Process -FilePath (Get-CurrentPowerShellPath) -ArgumentList ($arguments -join " ") -WorkingDirectory $PSScriptRoot -Verb RunAs -PassThru -Wait
+    exit $process.ExitCode
 }
 
 if ($CreateDesktopShortcut -and $NoDesktopShortcut) {
@@ -120,7 +123,6 @@ if (-not [string]::IsNullOrWhiteSpace($InstallPath)) {
 
 if (-not (Test-IsAdmin)) {
     Invoke-SelfElevated
-    exit 0
 }
 
 if ([string]::IsNullOrWhiteSpace($InstallPath)) {
@@ -143,7 +145,7 @@ if (-not (Test-Path -LiteralPath $InstallPath -PathType Container)) {
 }
 
 if (-not $Force -and (Get-ChildItem -LiteralPath $InstallPath -Force | Select-Object -First 1)) {
-    $answer = Read-Host "Install folder is not empty. Continue and overwrite matching files? [Y]es/[N]o"
+    $answer = Read-Host "Install folder is not empty. Continue and overwrite matching files (preserving data\Config.psd1 and data\Config.local.psd1)? [Y]es/[N]o"
     if ($answer.ToLowerInvariant() -notin @("y", "yes")) {
         Write-Host "Installation cancelled." -ForegroundColor Yellow
         exit 1
@@ -170,9 +172,15 @@ function Get-RelativePath($BasePath, $Path) {
     return [System.Uri]::UnescapeDataString($baseUri.MakeRelativeUri($pathUri).ToString()).Replace("/", "\")
 }
 
-function Test-ExcludedPath($RelativePath) {
+function Test-ExcludedPath($RelativePath, $PreserveConfigFiles = $false) {
     if ($excludeFiles -contains $RelativePath) {
         return $true
+    }
+
+    if ($PreserveConfigFiles) {
+        if ($RelativePath -eq "data\Config.psd1" -or $RelativePath -eq "data\Config.local.psd1") {
+            return $true
+        }
     }
 
     foreach ($excludeDir in $excludeDirs) {
@@ -517,10 +525,13 @@ Write-Host "Installing WSL-Dev-Startup..." -ForegroundColor Cyan
 Write-Host "Source:  $SourceRepo"
 Write-Host "Install: $InstallPath"
 
+$isUpgrade = (Get-ChildItem -LiteralPath $InstallPath -Force | Select-Object -First 1) -ne $null
+$preserveConfigFiles = $isUpgrade -and -not $Force
+
 $copied = 0
 foreach ($sourceFile in Get-ChildItem -LiteralPath $SourceRepo -File -Recurse) {
     $relativePath = Get-RelativePath $SourceRepo $sourceFile.FullName
-    if (Test-ExcludedPath $relativePath) {
+    if (Test-ExcludedPath $relativePath $preserveConfigFiles) {
         continue
     }
 

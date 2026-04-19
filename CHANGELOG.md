@@ -10,17 +10,17 @@ This project starts tracked versioning at `0.2.0`.
 
 * Added support for gitignored `Config.local.psd1` machine-specific overrides.
 * Added `install.cmd` as a double-clickable installer launcher that keeps installer output visible.
+* Added user-selectable install paths through `install.ps1`.
+* Added installer self-elevation through the Windows UAC prompt when not already running as administrator.
+* Added installer pause-on-exit support for launcher-driven installs.
+* Added install-generated `update.ps1` and `uninstall.ps1` helpers.
+* Added installer prompts for creating an elevated desktop shortcut and registering a highest-privilege startup task.
 
 ### Changed
 
 * Updated config loading so `-ConfigPath` takes priority, followed by `Config.local.psd1` overrides, then tracked `Config.psd1` defaults.
 * Added README guidance for avoiding merge conflicts when customizing tracked `HeaderLocalhost.txt`.
 * Replaced the old `sync.ps1` flow with `install.ps1`.
-* Added user-selectable install paths through `install.ps1`.
-* Added installer self-elevation through the Windows UAC prompt when not already running as administrator.
-* Added installer pause-on-exit support for launcher-driven installs.
-* Added install-generated `update.ps1` and `uninstall.ps1` helpers.
-* Added installer prompts for creating an elevated desktop shortcut and registering a highest-privilege startup task.
 * Moved the installable application payload into `assets` while keeping repository docs and the installer launcher at the root.
 * Updated the generated update helper to offer override-all, override-all-except-host-parts, and file-by-file approval modes.
 
