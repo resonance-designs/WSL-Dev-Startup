@@ -1,3 +1,5 @@
+# HostPartOrder: 10
+
 $hosts = @(
     [PSCustomObject]@{Action = 'add'; Name = ''; IP = '# WSL Virtual Hosts'}
     [PSCustomObject]@{Action = 'add'; Name = ''; IP = '## Web Roots'}

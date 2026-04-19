@@ -1,5 +1,6 @@
 param(
-    [switch]$PauseOnExit
+    [switch]$PauseOnExit,
+    [string]$ConfigPath = ""
 )
 
 #######################################################################################
@@ -7,10 +8,6 @@ param(
 # Description:
 # A PowerShell script to start WSL services, build the Windows hosts file using
 # various sources (including the WSL host IP), and running network configurations.
-#
-# Known limitations:
-# - Import of WSL hosts does not handle entries with comments afterwards, for example:
-#   ("<ip>    <host>    # comment")
 #######################################################################################
 
 $ErrorActionPreference = "Stop"
@@ -41,17 +38,34 @@ function ShowFailureHelp($errorRecord) {
     Write-Host "- Run this script from an elevated PowerShell session or use Run as administrator."
     Write-Host "- Confirm the configured WSL distro exists with: wsl -l -v"
     Write-Host "- If you changed WSLDist, make sure it exactly matches the distro name."
-    Write-Host "- Confirm Apache/MySQL exist in WSL and can restart."
+    Write-Host "- Confirm configured WSLServices exist in WSL and can restart."
     Write-Host "- Close editors or security tools that may temporarily lock the Windows hosts file."
     Write-Host "- Confirm host-part files exist under data\host-parts and contain valid PowerShell/text."
     Write-Host "- Check portproxy manually with: netsh interface portproxy show all"
+}
+
+function ResolveConfigPath([string]$RequestedConfigPath) {
+    if (-not [string]::IsNullOrWhiteSpace($RequestedConfigPath)) {
+        if (-not (Test-Path -LiteralPath $RequestedConfigPath -PathType Leaf)) {
+            throw "Config file was not found at '$RequestedConfigPath'."
+        }
+
+        return (Resolve-Path -LiteralPath $RequestedConfigPath).Path
+    }
+
+    $active_config = Join-Path $PSScriptRoot "data\Config.psd1"
+    if (Test-Path -LiteralPath $active_config -PathType Leaf) {
+        return $active_config
+    }
+
+    return Join-Path $PSScriptRoot "data\Config.example.psd1"
 }
 
 $effectivePauseOnExit = $PauseOnExit
 
 try {
     # Import Script Config Params and Paths
-    $config = Import-PowerShellDataFile -Path $PSScriptRoot"\data\Config.example.psd1"
+    $config = Import-PowerShellDataFile -Path (ResolveConfigPath $ConfigPath)
     $effectivePauseOnExit = $effectivePauseOnExit -or $config.PauseOnExit
 
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
@@ -101,15 +115,12 @@ try {
     BackupHosts $config.BkpHostMsg $white $black 24 $green $black 3 $config.BkpHostMsg $black $green
     ClearHosts $config.ClrHostMsg $white $black 16 $green $black 3 $config.ClrHostMsg $black $green
     ImportHostsPart $config.HeaderLocalhost $config.ImpHeadMsg $white $black 8 $green $black 3 $config.ImpHeadMsg $black $green
-    ImportHostsArray $config.HostsArray $config.ImpWSLMsg $white $black 35 $green $black 3 $config.ImpWSLMsg $black $green
+    ImportDynamicHostParts $config.HeaderLocalhost $white $black $green $black 3 $black $green
     if ($config.ImportApacheVHosts) {
         ImportApacheVHosts $config.ImpApacheVHostsMsg $white $black 21 $green $black 3 $config.ImpApacheVHostsMsg $black $green
     }
-    ImportHostsPart $config.SoftwareBlocks $config.ImpSoftMsg $white $black 10 $green $black 3 $config.ImpSoftMsg $black $green
-    ImportHostsPart $config.AdBlocks $config.ImpAdsMsg $white $black 15 $green $black 3 $config.ImpAdsMsg $black $green
     SetNetConfigs
 
-    WriteSuccessFrame " = Script completed successfully. Press any key to close this window =" $green $black
     if ($effectivePauseOnExit) {
         WriteSuccessFrame " = Script completed successfully. Press any key to close this window =" $green $black
         WaitForExit
