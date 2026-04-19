@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 This project starts tracked versioning at `0.2.0`.
 
-## [0.2.3] - Unreleased
+## [0.2.3] - 2026-04-19
 
 ### Added
 
