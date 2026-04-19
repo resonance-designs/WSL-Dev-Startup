@@ -10,36 +10,57 @@ function GetWSLIP() {
     return $wsl_ip
 }
 
-function AddPortProxy($listenAddress, $connectPort, $connectAddress) {
+function GetConfiguredPortProxies() {
+    if ($config.ContainsKey("PortProxies") -and $config.PortProxies) {
+        return @($config.PortProxies)
+    }
+
+    return @(
+        @{ Name = "Apache"; ListenAddress = $config.ApacheIP; ListenPort = "80"; ConnectPort = $config.ApachePort }
+        @{ Name = "Nginx"; ListenAddress = $config.NginxIP; ListenPort = "80"; ConnectPort = $config.NginxPort }
+        @{ Name = "MERN"; ListenAddress = $config.MERNIP; ListenPort = "80"; ConnectPort = $config.MERNPort }
+        @{ Name = "Rails"; ListenAddress = $config.RailsIP; ListenPort = "80"; ConnectPort = $config.RailsPort }
+    ) | Where-Object { $_.ListenAddress -and $_.ConnectPort }
+}
+
+function AddPortProxy($listenAddress, $listenPort, $connectPort, $connectAddress, $name = "") {
+    if ([string]::IsNullOrWhiteSpace($listenAddress)) {
+        throw "Portproxy mapping '$name' is missing ListenAddress."
+    }
+
+    if ([string]::IsNullOrWhiteSpace($listenPort)) {
+        throw "Portproxy mapping '$name' is missing ListenPort."
+    }
+
+    if ([string]::IsNullOrWhiteSpace($connectPort)) {
+        throw "Portproxy mapping '$name' is missing ConnectPort."
+    }
+
     $nativeErrorPreference = $PSNativeCommandUseErrorActionPreference
     $PSNativeCommandUseErrorActionPreference = $false
     try {
-        netsh.exe interface portproxy delete v4tov4 listenport=80 listenaddress=$listenAddress | Out-Null
+        netsh.exe interface portproxy delete v4tov4 listenport=$listenPort listenaddress=$listenAddress | Out-Null
+
+        netsh.exe interface portproxy add v4tov4 listenport=$listenPort listenaddress=$listenAddress connectport=$connectPort connectaddress=$connectAddress | Out-Null
+        if ($LASTEXITCODE -ne 0) {
+            throw "Failed to add portproxy rule '$name' $listenAddress`:$listenPort -> $connectAddress`:$connectPort."
+        }
     } finally {
         $PSNativeCommandUseErrorActionPreference = $nativeErrorPreference
-    }
-
-    netsh.exe interface portproxy add v4tov4 listenport=80 listenaddress=$listenAddress connectport=$connectPort connectaddress=$connectAddress | Out-Null
-    if ($LASTEXITCODE -ne 0) {
-        throw "Failed to add portproxy rule $listenAddress`:80 -> $connectAddress`:$connectPort."
     }
 }
 
 function SetNetConfigs() {
     $wsl_ip = GetWSLIP
 
-    # Give WSL Apache a static IP on port 80
-    AddPortProxy $config.ApacheIP $config.ApachePort $wsl_ip
-    # Give WSL Nginx a static IP on port 81
-    AddPortProxy $config.NginxIP $config.NginxPort $wsl_ip
-    # Give WSL MERN a static IP on port 82
-    AddPortProxy $config.MERNIP $config.MERNPort $wsl_ip
-    # Give WSL Rails a static IP on port 80
-    AddPortProxy $config.RailsIP $config.RailsPort $wsl_ip
+    foreach ($proxy in GetConfiguredPortProxies) {
+        AddPortProxy $proxy.ListenAddress $proxy.ListenPort $proxy.ConnectPort $wsl_ip $proxy.Name
+    }
 
     WriteStepSuccess $config.NTCFGMsg $white $black $green $black
     SleepProgress 3 $config.NTCFGMsg $black $green
 }
 Export-ModuleMember -Function 'GetWSLIP'
+Export-ModuleMember -Function 'GetConfiguredPortProxies'
 Export-ModuleMember -Function 'AddPortProxy'
 Export-ModuleMember -Function 'SetNetConfigs'

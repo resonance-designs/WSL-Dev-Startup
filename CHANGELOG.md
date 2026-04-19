@@ -4,7 +4,34 @@ All notable changes to this project will be documented in this file.
 
 This project starts tracked versioning at `0.2.0`.
 
+## [0.2.2] - 2026-04-19
+
+### Added
+
+* Added dynamic host-part discovery for `.ps1` and `.txt` files in the configured host-parts folder.
+* Added `HostPartOrder` flags for dynamic host-part ordering.
+* Added support for `Config.psd1` as the preferred local active config, with `Config.example.psd1` as fallback.
+* Added configurable WSL service restart lists via `WSLServices`.
+* Added configurable portproxy mappings via `PortProxies`.
+* Added configurable Apache enabled-sites path via `ApacheSitesEnabledPath`.
+* Added `CONTRIBUTING.md` with upstream-first contribution guidance.
+
+### Changed
+
+* Changed hosts rebuild ordering so the configured header is written first, followed by host-part files in ascending `HostPartOrder`.
+* Removed static config targets for individual non-header host-part files.
+* Changed WSL service startup and portproxy refresh to loop over configured entries instead of hardcoded Apache/MySQL and Apache/Nginx/MERN/Rails assumptions.
+* Updated README documentation for dynamic config, ordered host parts, configurable services, configurable portproxy mappings, and upstream-first contribution guidance.
+
+### Fixed
+
+* Fixed dynamic host-part imports to fail clearly when order flags are missing or duplicated.
+
 ## [0.2.1] - 2026-04-19
+
+### Added
+
+* No new features.
 
 ### Changed
 
