@@ -1,7 +1,7 @@
 # WSL-Dev-Startup
 
-![Static Badge](https://img.shields.io/badge/Version-0.2.0-orange)
-![Static Badge](https://img.shields.io/badge/Release-v0.2.0-green)
+![Static Badge](https://img.shields.io/badge/Version-0.2.1-orange)
+![Static Badge](https://img.shields.io/badge/Release-v0.2.1-green)
 
 A PowerShell startup script for a Windows + WSL local development environment. It starts WSL services, rebuilds the Windows hosts file from configured source blocks, imports enabled Apache virtual hosts, and refreshes Windows `netsh interface portproxy` mappings so stable local IPs can forward traffic into WSL.
 
@@ -58,7 +58,7 @@ Open Windows PowerShell or Command Prompt as Administrator, then run:
 The `.cmd` launcher runs:
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File WSL-Dev-Startup.ps1 -PauseOnExit
+powershell.exe -NoProfile -ExecutionPolicy RemoteSigned -File WSL-Dev-Startup.ps1 -PauseOnExit
 ```
 
 Manual runs pause at the end. On success, the script shows a green framed message. On failure, it shows red unframed error text with possible causes and fixes.
@@ -70,7 +70,7 @@ For scheduled startup, call the PowerShell script directly so the task can finis
 ```powershell
 $action = New-ScheduledTaskAction `
   -Execute "powershell.exe" `
-  -Argument '-NoProfile -ExecutionPolicy Bypass -File "C:\Scripts\WSL-Dev-Startup\WSL-Dev-Startup.ps1"' `
+  -Argument '-NoProfile -ExecutionPolicy RemoteSigned -File "C:\Scripts\WSL-Dev-Startup\WSL-Dev-Startup.ps1"' `
   -WorkingDirectory "C:\Scripts\WSL-Dev-Startup"
 
 $trigger = New-ScheduledTaskTrigger -AtLogOn
@@ -152,6 +152,8 @@ To choose from installed distros during manual runs:
 WSLDist = ""
 WSLDistPrompt = $true
 ```
+
+`WSLDistPrompt` requires an interactive session. Scheduled or non-interactive runs should set `WSLDistPrompt = $false` and either leave `WSLDist` empty to use the default distro or set `WSLDist` explicitly.
 
 Check installed distro names with:
 
