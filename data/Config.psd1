@@ -16,7 +16,7 @@
     HostParts = "\data\host-parts\"
     ImportApacheVHosts = $true
     ApacheSitesEnabledPath = "/etc/apache2/sites-enabled"
-    HeaderLocalhost = "HeaderLocalhost.example.txt"
+    HeaderLocalhost = "HeaderLocalhost.txt"
     OneLine = "`n"
     TwoLines = "`n `n"
     FourLines = "`n `n `n `n"
@@ -31,7 +31,7 @@
     BkpHostMsg = " * Backed up the Windows host file. Resuming script in 3 seconds..."
     NTCFGMsg = " * Applied network configuration changes. Resuming script in 3 seconds..."
     ClrHostMsg = " * Cleared out the contents of the Windows host file. Resuming script in 3 seconds..."
-    ImpHeadMsg = " * Imported HeaderLocalhost.example.txt to Windows host file. Resuming script in 3 seconds..."
+    ImpHeadMsg = " * Imported HeaderLocalhost.txt to Windows host file. Resuming script in 3 seconds..."
     ImpApacheVHostsMsg = " * Imported enabled Apache virtual hosts. Resuming script in 3 seconds..."
     OKMsg = "[ OK ]"
     ApacheIP = "127.65.43.21"
