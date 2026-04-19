@@ -116,12 +116,48 @@ The main config file is:
 data\Config.psd1
 ```
 
-Edit `Config.psd1` to match your local system. Machine-specific settings can live directly in this file.
+In this repo, that file lives at `assets\data\Config.psd1`. After installation, it lives at `data\Config.psd1` inside the selected install folder.
+
+Upgrade note: older versions fell back to `data\Config.example.psd1`. That fallback has been removed. Existing users must keep a tracked `Config.psd1` in the installable payload or pass `-ConfigPath` to `WSL-Dev-Startup.ps1`.
+
+Keep shared defaults in `Config.psd1`. Put machine-specific settings in a gitignored local override file:
+
+```text
+data\Config.local.psd1
+```
+
+In the source repo, the local override path is `assets\data\Config.local.psd1`.
+
+When no explicit config path is supplied, the script loads `Config.psd1` first, then overlays any keys from `Config.local.psd1`.
 
 Pass `-ConfigPath` to use a specific config file:
 
 ```powershell
 .\WSL-Dev-Startup.ps1 -ConfigPath "C:\Scripts\WSL-Dev-Startup\data\Config.psd1"
+```
+
+Config preference order:
+
+1. `-ConfigPath`, when provided.
+2. `data\Config.psd1` plus `data\Config.local.psd1` overrides, when present.
+3. `data\Config.psd1`.
+
+Example `Config.local.psd1`:
+
+```powershell
+@{
+    WSLDist = "Ubuntu"
+    HeaderLocalhost = "HeaderLocalhost.txt"
+    ImpHeadMsg = " * Imported HeaderLocalhost.txt to Windows host file. Resuming script in 3 seconds..."
+    PortProxies = @(
+        @{
+            Name = "Apache"
+            ListenAddress = "127.65.43.21"
+            ListenPort = "80"
+            ConnectPort = "80"
+        }
+    )
+}
 ```
 
 Important values:
@@ -178,32 +214,83 @@ The project root contains:
 
 * `CHANGELOG.md`: release notes.
 * `CONTRIBUTING.md`: contribution guidance and upstream-first expectations.
+* `HANDOFF.md`: project handoff notes.
+* `install.cmd`: double-clickable installer launcher.
 * `LICENSE`: GPLv3 license text.
-* `WSL-Dev-Startup.cmd`: manual launcher that pauses on success/failure.
-* `WSL-Dev-Startup.ps1`: main script.
 * `README.md`: this documentation.
 
-The `data` folder contains:
+The `assets` folder contains the installable application payload:
+
+* `install.ps1`: installs WSL-Dev-Startup to a user-selected folder.
+* `WSL-Dev-Startup.cmd`: manual launcher that pauses on success/failure.
+* `WSL-Dev-Startup.ps1`: main script.
+
+The `assets/data` folder contains:
 
 * `Config.psd1`: main configuration.
+* `Config.local.psd1`: optional gitignored local override configuration.
 * `host-parts/`: files used to rebuild the Windows hosts file.
 * `ui-elements/Colors.ps1`: terminal color variables.
 * `backups/`: runtime hosts-file backups. This folder is ignored by Git.
 
-The `modules` folder contains:
+The `assets/modules` folder contains:
 
 * `Utilities/Utilities.psm1`: output styling, progress display, distro selection, and pause handling.
 * `WSLServices/WSLServices.psm1`: restarts configured services inside the resolved WSL distro.
 * `ImportHosts/ImportHosts.psm1`: backs up, clears, and rebuilds the Windows hosts file.
 * `NetConfig/NetConfig.psm1`: detects the current WSL IP and refreshes portproxy mappings.
 
-The local install helper lives outside the repo:
+## Install And Update
 
-* `C:\Scripts\sync.ps1`: syncs repo changes to `C:\Scripts\WSL-Dev-Startup` while protecting generated backups.
+Install WSL-Dev-Startup to any folder you use for scripts:
+
+```powershell
+.\install.cmd
+.\assets\install.ps1 -InstallPath "C:\Scripts\WSL-Dev-Startup"
+```
+
+Use `install.cmd` for a double-clickable installer window. The launcher runs `assets\install.ps1` with pause behavior so success and failure messages stay visible.
+
+On Windows, double-clicking `assets\install.ps1` may open it in an editor, depending on file associations. Use `install.cmd` for Explorer-based installs.
+
+If the installer is not already running as administrator, it relaunches itself and shows the normal Windows UAC prompt.
+
+The installer copies files from `assets` to the selected folder, excluding `install.ps1`, generated install helpers, and generated backups. It also builds install-specific `update.ps1` and `uninstall.ps1` helpers in the selected folder. Those helper scripts are generated during installation and are not tracked as repo files.
+
+During installation, the installer can also:
+
+* Create a desktop shortcut to the installed `WSL-Dev-Startup.cmd` launcher. The shortcut is configured to run as administrator.
+* Register a `\Scripts\WSL-Dev-Startup` scheduled task that runs at logon with highest privileges.
+
+For non-interactive installs, use switches:
+
+```powershell
+.\assets\install.ps1 -InstallPath "C:\Scripts\WSL-Dev-Startup" -CreateDesktopShortcut -RegisterStartupTask
+.\assets\install.ps1 -InstallPath "C:\Scripts\WSL-Dev-Startup" -NoDesktopShortcut -NoStartupTask
+```
+
+After installation, update from the repo with:
+
+```powershell
+C:\Scripts\WSL-Dev-Startup\update.ps1
+C:\Scripts\WSL-Dev-Startup\update.ps1 -OverwriteAll
+C:\Scripts\WSL-Dev-Startup\update.ps1 -OverwriteAllExceptHostParts
+C:\Scripts\WSL-Dev-Startup\update.ps1 -ApproveEachFile
+```
+
+When no mode switch is provided, the update script presents three choices: override all files, override all except host-parts, or approve each file one by one. Generated backups are always protected.
+
+To remove installed files:
+
+```powershell
+C:\Scripts\WSL-Dev-Startup\uninstall.ps1
+```
 
 ## Host Parts
 
 The header file configured by `HeaderLocalhost` is always written first.
+
+`assets/data/host-parts/HeaderLocalhost.txt` is tracked by the repo. To avoid merge conflicts, keep project-wide header changes in that file and keep machine-specific banner/header changes out of commits. For local-only branding, copy the header to a different filename, such as `HeaderLocalhost.local.txt`, point `HeaderLocalhost` to that file from `data\Config.local.psd1`, and leave the local copy untracked.
 
 After the header, the script scans the configured `HostParts` folder for `.ps1` and `.txt` files. Each imported file must include a numeric order flag:
 
@@ -301,4 +388,4 @@ If you improve the script, please open a pull request against the main repositor
 
 ## Notes
 
-Update `Config.psd1` and the host-part files to match your local domains, service ports, and desired host blocks.
+Update `Config.local.psd1` for machine-specific configuration and keep shared defaults in `Config.psd1`. In the repo, those files live under `assets\data`; after installation, they live under the selected install folder. Update host-part files to match your local domains, service ports, and desired host blocks.

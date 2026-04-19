@@ -1,3 +1,26 @@
+# Tracked default configuration.
+#
+# Put machine-specific values in data\Config.local.psd1 to avoid merge conflicts.
+# The script loads config in this order:
+#   1. -ConfigPath, when provided
+#   2. data\Config.psd1 plus data\Config.local.psd1 overrides, when present
+#   3. data\Config.psd1
+#
+# Example data\Config.local.psd1 override:
+# @{
+#     WSLDist = "Ubuntu"
+#     HeaderLocalhost = "HeaderLocalhost.txt"
+#     ImpHeadMsg = " * Imported HeaderLocalhost.txt to Windows host file. Resuming script in 3 seconds..."
+#     PortProxies = @(
+#         @{
+#             Name = "Apache"
+#             ListenAddress = "127.65.43.21"
+#             ListenPort = "80"
+#             ConnectPort = "80"
+#         }
+#     )
+# }
+
 @{
     Modules = "\modules"
     WinHostsFile = "C:\Windows\System32\drivers\etc\hosts"
