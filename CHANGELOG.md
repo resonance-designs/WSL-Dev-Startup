@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 
 This project starts tracked versioning at `0.2.0`.
 
+## [0.2.1] - 2026-04-19
+
+### Changed
+
+* Updated the manual `.cmd` launcher to use the `RemoteSigned` execution policy.
+* Removed an outdated launcher note about hosts-array comments.
+* Updated hosts-file writes to use UTF-8 without BOM.
+* Updated hosts backup path construction to use `Join-Path`.
+* Improved WSL service startup so native command error preference is restored after service commands run.
+
+### Fixed
+
+* Fixed Apache vhost dedupe so existing hosts-file lines with multiple hostnames are detected correctly.
+* Fixed an unused `AddWSLHost` parameter and updated its call site.
+* Fixed non-interactive WSL distro prompt behavior so scheduled/non-interactive runs fail with a clear configuration message.
+
 ## [0.2.0] - 2026-04-18
 
 ### Added

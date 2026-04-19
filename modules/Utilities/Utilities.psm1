@@ -95,7 +95,11 @@ function ResolveWSLDistro([string]$ConfiguredDistro, [bool]$PromptForDistro) {
         throw "Configured WSL distro '$ConfiguredDistro' was not found. Installed distros: $($distros -join ', ')"
     }
 
-    if ($PromptForDistro -and $Host.Name -ne "ServerRemoteHost") {
+    if ($PromptForDistro) {
+        if (-not [Environment]::UserInteractive -or $Host.Name -eq "ServerRemoteHost") {
+            throw "WSLDistPrompt is enabled, but this session is non-interactive. Set WSLDist or disable WSLDistPrompt."
+        }
+
         Write-Host "Installed WSL distributions:"
         for ($i = 0; $i -lt $distros.Count; $i++) {
             Write-Host ("[{0}] {1}" -f ($i + 1), $distros[$i])

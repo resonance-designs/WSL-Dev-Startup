@@ -47,10 +47,12 @@ function ShowFailureHelp($errorRecord) {
     Write-Host "- Check portproxy manually with: netsh interface portproxy show all"
 }
 
+$effectivePauseOnExit = $PauseOnExit
+
 try {
     # Import Script Config Params and Paths
     $config = Import-PowerShellDataFile -Path $PSScriptRoot"\data\Config.example.psd1"
-    $effectivePauseOnExit = $PauseOnExit -or $config.PauseOnExit
+    $effectivePauseOnExit = $effectivePauseOnExit -or $config.PauseOnExit
 
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)
     if (-not $isAdmin) {
@@ -109,7 +111,10 @@ try {
 
     WriteSuccessFrame " = Script completed successfully. Press any key to close this window =" $green $black
     if ($effectivePauseOnExit) {
+        WriteSuccessFrame " = Script completed successfully. Press any key to close this window =" $green $black
         WaitForExit
+    } else {
+        WriteSuccessFrame " = Script completed successfully =" $green $black
     }
     exit 0
 } catch {
