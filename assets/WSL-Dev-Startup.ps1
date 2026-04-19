@@ -55,17 +55,36 @@ function ResolveConfigPath([string]$RequestedConfigPath) {
 
     $config_path = Join-Path $PSScriptRoot "data\Config.psd1"
     if (-not (Test-Path -LiteralPath $config_path -PathType Leaf)) {
-        throw "Config file was not found at '$config_path'."
+        throw "Config file was not found at '$config_path'. As of 0.2.2, 'data\Config.psd1' is the main tracked config (previously 'Config.example.psd1'). Restore it from the repo or pass -ConfigPath to point at a different file."
     }
 
     return $config_path
+}
+
+function ImportStartupConfig([string]$RequestedConfigPath) {
+    if (-not [string]::IsNullOrWhiteSpace($RequestedConfigPath)) {
+        return Import-PowerShellDataFile -Path (ResolveConfigPath $RequestedConfigPath)
+    }
+
+    $config_path = ResolveConfigPath ""
+    $startup_config = Import-PowerShellDataFile -Path $config_path
+    $local_config_path = Join-Path $PSScriptRoot "data\Config.local.psd1"
+
+    if (Test-Path -LiteralPath $local_config_path -PathType Leaf) {
+        $local_config = Import-PowerShellDataFile -Path $local_config_path
+        foreach ($key in $local_config.Keys) {
+            $startup_config[$key] = $local_config[$key]
+        }
+    }
+
+    return $startup_config
 }
 
 $effectivePauseOnExit = $PauseOnExit
 
 try {
     # Import Script Config Params and Paths
-    $config = Import-PowerShellDataFile -Path (ResolveConfigPath $ConfigPath)
+    $config = ImportStartupConfig $ConfigPath
     $effectivePauseOnExit = $effectivePauseOnExit -or $config.PauseOnExit
 
     $isAdmin = ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)

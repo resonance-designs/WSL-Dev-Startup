@@ -1,12 +1,12 @@
-# Handoff: WSL-Dev-Startup To devcntrl
+# Handoff: WSL-Dev-Startup To rdevsyscmd
 
 ## Big Picture
 
 This repository currently contains `WSL-Dev-Startup`, a standalone PowerShell utility for Windows + WSL local development environments.
 
-The larger project direction is to fork or evolve this work into a new repo/project named `devcntrl`.
+The larger project direction is to fork or evolve this work into a new repo/project named `rdevsyscmd`, short for **Development System Command Center** by Resonance Designs.
 
-`devcntrl` is intended to become a local development control dashboard. It should provide a graphical interface for installing, configuring, starting, stopping, inspecting, and maintaining local development tooling. The planned stack is:
+`rdevsyscmd` is intended to become a local development control dashboard. It should provide a graphical interface for installing, configuring, starting, stopping, inspecting, and maintaining local development tooling. The planned stack is:
 
 * Tauri desktop app
 * Vue
@@ -14,28 +14,28 @@ The larger project direction is to fork or evolve this work into a new repo/proj
 * Material-style UI
 * Local command execution layer
 
-The key architectural idea: `devcntrl` should be a UI/orchestration layer over standalone CLI/script projects. The scripts should remain independently useful from PowerShell, shell, or other CLI environments.
+The key architectural idea: `rdevsyscmd` should be a UI/orchestration layer over standalone CLI/script projects. The scripts should remain independently useful from PowerShell, shell, or other CLI environments.
 
 In other words:
 
 ```text
-devcntrl = dashboard + orchestration + local UX
-scripts  = standalone engines that can run without devcntrl
+rdevsyscmd = dashboard + orchestration + local UX
+scripts    = standalone engines that can run without rdevsyscmd
 ```
 
 `WSL-Dev-Startup` is the first script/tooling package to be unified under that larger dashboard.
 
 ## Current Repository Role
 
-This repo should remain a usable standalone tool. It should not become tightly coupled to `devcntrl`.
+This repo should remain a usable standalone tool. It should not become tightly coupled to `rdevsyscmd`.
 
 Good future integration points:
 
-* `devcntrl` can call `WSL-Dev-Startup.ps1`.
-* `devcntrl` can inspect/edit config files.
-* `devcntrl` can render host-part files in a UI.
-* `devcntrl` can run sync/install/update actions.
-* `devcntrl` can parse command output or, ideally later, consume structured output from scripts.
+* `rdevsyscmd` can call `WSL-Dev-Startup.ps1`.
+* `rdevsyscmd` can inspect/edit config files.
+* `rdevsyscmd` can render host-part files in a UI.
+* `rdevsyscmd` can run install/update/uninstall actions.
+* `rdevsyscmd` can parse command output or, ideally later, consume structured output from scripts.
 
 Avoid:
 
@@ -55,6 +55,7 @@ Known release history:
 * `v0.2.0`: first tracked release; modernized WSL startup workflow.
 * `v0.2.1`: patch release; reliability, docs, PowerShell behavior cleanup.
 * `v0.2.2`: dynamic configuration, ordered host parts, and contribution docs.
+* `v0.2.3`: unreleased dev work; installer/update workflow, local config overrides, and `assets` payload layout.
 
 Current major capabilities:
 
@@ -64,39 +65,52 @@ Current major capabilities:
 * Rebuilds the Windows hosts file from a static header plus dynamic ordered host-part files.
 * Imports enabled Apache virtual hosts from WSL.
 * Refreshes Windows `netsh interface portproxy` mappings.
-* Supports local active config via `data\Config.psd1`.
-* Falls back to `data\Config.example.psd1`.
+* Supports tracked defaults via `assets\data\Config.psd1`.
+* Supports machine-specific local overrides via ignored `assets\data\Config.local.psd1`.
+* Installs from the root `install.cmd` launcher, which runs `assets\install.ps1`.
+* Self-elevates through UAC when installer admin rights are required.
+* Can optionally create an elevated desktop shortcut and a highest-privilege logon task.
+* Generates installed `update.ps1` and `uninstall.ps1` helpers.
 
 ## Important Files
 
 Project root:
 
-* `WSL-Dev-Startup.ps1`: main script entrypoint.
-* `WSL-Dev-Startup.cmd`: manual Windows launcher.
 * `README.md`: user-facing docs.
 * `CHANGELOG.md`: release notes.
 * `CONTRIBUTING.md`: upstream-first contribution expectations.
 * `LICENSE`: currently GPLv3.
 * `HANDOFF.md`: this file.
+* `install.cmd`: double-clickable installer launcher.
+
+Installable payload:
+
+* `assets\install.ps1`: installer script.
+* `assets\WSL-Dev-Startup.ps1`: main script entrypoint.
+* `assets\WSL-Dev-Startup.cmd`: manual Windows launcher.
 
 Config/data:
 
-* `data\Config.example.psd1`: repo template config.
-* `data\Config.psd1`: preferred local active config; ignored by Git.
-* `data\host-parts\`: host file source parts.
-* `data\backups\`: generated Windows hosts backups; ignored by Git.
-* `data\ui-elements\Colors.ps1`: terminal color variables.
+* `assets\data\Config.psd1`: tracked shared defaults.
+* `assets\data\Config.local.psd1`: optional local override config; ignored by Git.
+* `assets\data\host-parts\`: host file source parts.
+* `assets\data\backups\`: generated Windows hosts backups; ignored by Git.
+* `assets\data\ui-elements\Colors.ps1`: terminal color variables.
 
 Modules:
 
-* `modules\Utilities\Utilities.psm1`: output formatting, progress, WSL distro resolution, pause behavior.
-* `modules\WSLServices\WSLServices.psm1`: restarts configured WSL services.
-* `modules\ImportHosts\ImportHosts.psm1`: hosts backup, clear, rebuild, host-part import, Apache vhost import.
-* `modules\NetConfig\NetConfig.psm1`: WSL IP detection and portproxy refresh.
+* `assets\modules\Utilities\Utilities.psm1`: output formatting, progress, WSL distro resolution, pause behavior.
+* `assets\modules\WSLServices\WSLServices.psm1`: restarts configured WSL services.
+* `assets\modules\ImportHosts\ImportHosts.psm1`: hosts backup, clear, rebuild, host-part import, Apache vhost import.
+* `assets\modules\NetConfig\NetConfig.psm1`: WSL IP detection and portproxy refresh.
 
-Local install helper:
+Local install/update helpers:
 
-* `C:\Scripts\sync.ps1`: syncs repo files to `C:\Scripts\WSL-Dev-Startup` while protecting local config, host-parts, and backups by default.
+* `install.cmd`: launches the installer from the repo root.
+* Installed `update.ps1`: generated by `assets\install.ps1`.
+* Installed `uninstall.ps1`: generated by `assets\install.ps1`.
+
+The repo does not track `update.ps1` or `uninstall.ps1`. They are generated during installation because they bake in the selected source repo and install paths.
 
 ## Configuration Model
 
@@ -104,11 +118,41 @@ The main script now resolves config in this order:
 
 ```text
 1. -ConfigPath argument, if provided
-2. data\Config.psd1, if present
-3. data\Config.example.psd1
+2. data\Config.psd1 plus data\Config.local.psd1 overrides, when present
+3. data\Config.psd1
 ```
 
-`data\Config.psd1` should be used for local machine-specific settings and is ignored by Git.
+In the source repo those files live under `assets\data`. After installation, they live under the selected install folder. Use `Config.local.psd1` for local machine-specific settings; it is ignored by Git.
+
+The old fallback to `Config.example.psd1` has been removed. `Config.psd1` is the tracked default config, and `Config.local.psd1` is the local override.
+
+## Install And Update Model
+
+Source repo layout:
+
+```text
+install.cmd
+assets\
+```
+
+Install behavior:
+
+* Root `install.cmd` is the Explorer-friendly entrypoint.
+* `install.cmd` launches `assets\install.ps1` with `-PauseOnExit`.
+* `assets\install.ps1` self-elevates through the Windows UAC prompt if it is not already running as administrator.
+* The installer copies the contents of `assets` into the selected install folder.
+* `install.ps1`, generated install helpers, and `data\backups` are excluded from the installed payload sync.
+* The installer generates install-specific `update.ps1` and `uninstall.ps1` scripts in the selected install folder.
+* The installer can optionally create a desktop shortcut to the installed `WSL-Dev-Startup.cmd` and mark it to run as administrator.
+* The installer can optionally register a `\Scripts\WSL-Dev-Startup` scheduled task that runs at logon with highest privileges.
+
+Generated update modes:
+
+* `-OverwriteAll`
+* `-OverwriteAllExceptHostParts`
+* `-ApproveEachFile`
+
+When no mode switch is supplied, the generated update helper prompts for one of those three choices.
 
 Important config keys:
 
@@ -195,9 +239,9 @@ GPLv3 fits that intent better than MIT because GPLv3 is copyleft.
 
 Do not add a license requirement forcing forks to open PRs upstream. That would move away from standard FOSS/open-source norms. Instead, the project now uses an `Upstream First` contribution norm in `CONTRIBUTING.md` and `README.md`.
 
-## devcntrl Integration Vision
+## rdevsyscmd Integration Vision
 
-`devcntrl` should eventually provide UI surfaces for this script’s responsibilities:
+`rdevsyscmd` should eventually provide UI surfaces for this script’s responsibilities:
 
 * Pick or detect WSL distro.
 * View configured WSL services.
@@ -217,30 +261,30 @@ Best future improvement for UI integration:
 Add a structured output mode to scripts:
 
 ```powershell
-.\WSL-Dev-Startup.ps1 -OutputJson
+.\assets\WSL-Dev-Startup.ps1 -OutputJson
 ```
 
 or command-specific modes:
 
 ```powershell
-.\WSL-Dev-Startup.ps1 -ListConfig -OutputJson
-.\WSL-Dev-Startup.ps1 -ValidateHostParts -OutputJson
-.\WSL-Dev-Startup.ps1 -ShowPortProxies -OutputJson
+.\assets\WSL-Dev-Startup.ps1 -ListConfig -OutputJson
+.\assets\WSL-Dev-Startup.ps1 -ValidateHostParts -OutputJson
+.\assets\WSL-Dev-Startup.ps1 -ShowPortProxies -OutputJson
 ```
 
-This would let `devcntrl` consume stable JSON instead of parsing human console output.
+This would let `rdevsyscmd` consume stable JSON instead of parsing human console output.
 
-## Recommended Next Steps For devcntrl
+## Recommended Next Steps For rdevsyscmd
 
-1. Create/fork the new `devcntrl` repo.
+1. Create/fork the new `rdevsyscmd` repo.
 2. Keep this repo as a standalone script package.
-3. Decide whether `devcntrl` vendors this repo, uses Git submodules/subtrees, downloads releases, or shells out to an installed script path.
+3. Decide whether `rdevsyscmd` vendors this repo, uses Git submodules/subtrees, downloads releases, or shells out to an installed script path.
 4. Start with a Tauri/Vue/Vite app shell.
 5. Create a command execution abstraction in the Tauri backend.
 6. Add a `WSL-Dev-Startup` integration module that can:
    * locate the installed script
    * run it
-   * sync/update it
+   * install/update/uninstall it
    * inspect config
    * validate host parts
 7. Add structured-output commands to this script repo before building heavy UI around it.
@@ -249,11 +293,13 @@ This would let `devcntrl` consume stable JSON instead of parsing human console o
 ## Current Cautions
 
 * The repo and installed copy are intentionally different in places.
-* The installed copy at `C:\Scripts\WSL-Dev-Startup` uses local non-example host-part names.
-* Do not blindly overwrite installed `data\Config.psd1`, `data\Config.example.psd1`, or `data\host-parts`.
-* Use `C:\Scripts\sync.ps1` for syncing repo changes to the local install.
-* The sync script protects local config, host-parts, and backups by default.
+* The source repo keeps installable files under `assets`; installed copies place those payload files directly in the install folder.
+* Do not blindly overwrite installed `data\Config.local.psd1` or customized `data\host-parts`.
+* Use the installed `update.ps1` helper for syncing repo changes to the local install.
+* The update helper protects generated backups and can skip host-parts by mode.
 * If syncing new host-part code, ensure installed non-header host-part files include `HostPartOrder` flags.
+* `install.cmd` should stay at the repo root because it is the double-clickable launcher.
+* `.gitignore` should stay at the repo root and currently ignores `assets\data\backups` and `assets\data\Config.local.psd1`.
 
 ## Useful Validation Commands
 
@@ -261,11 +307,12 @@ PowerShell parse check:
 
 ```powershell
 $files = @(
-    "WSL-Dev-Startup.ps1",
-    "modules\ImportHosts\ImportHosts.psm1",
-    "modules\NetConfig\NetConfig.psm1",
-    "modules\WSLServices\WSLServices.psm1",
-    "modules\Utilities\Utilities.psm1"
+    "assets\WSL-Dev-Startup.ps1",
+    "assets\install.ps1",
+    "assets\modules\ImportHosts\ImportHosts.psm1",
+    "assets\modules\NetConfig\NetConfig.psm1",
+    "assets\modules\WSLServices\WSLServices.psm1",
+    "assets\modules\Utilities\Utilities.psm1"
 )
 
 foreach ($file in $files) {
@@ -292,14 +339,26 @@ Inspect git status:
 git status --short --branch
 ```
 
-Run local install sync:
+Run installer from the repo root:
 
 ```powershell
-C:\Scripts\sync.ps1
+.\install.cmd
 ```
 
-Force syncing local config and host-parts only when intentional:
+Run installer directly without desktop/startup artifacts:
 
 ```powershell
-C:\Scripts\sync.ps1 -IncludeLocalData
+.\assets\install.ps1 -InstallPath "C:\Scripts\WSL-Dev-Startup" -NoDesktopShortcut -NoStartupTask
+```
+
+Run local install update:
+
+```powershell
+C:\Scripts\WSL-Dev-Startup\update.ps1
+```
+
+Update everything except local host-parts:
+
+```powershell
+C:\Scripts\WSL-Dev-Startup\update.ps1 -OverwriteAllExceptHostParts
 ```

@@ -13,7 +13,7 @@ If you fix bugs, add support for new workflows, or improve compatibility, please
 * Keep changes focused and easy to review.
 * Update `CHANGELOG.md` for user-facing changes.
 * Update `README.md` when behavior, setup, configuration, or release flow changes.
-* Preserve the local-install split: repo templates belong in source control, while machine-specific files like `data\Config.psd1`, generated backups, and customized local host parts should stay local unless the change is intentionally part of the template.
+* Preserve the local-install split: shared payload files live under `assets`, while machine-specific files like `assets\data\Config.local.psd1`, generated backups, and customized local host parts should stay local unless the change is intentionally part of the template.
 * Run basic PowerShell parse checks before opening a PR when possible.
 
 ## License

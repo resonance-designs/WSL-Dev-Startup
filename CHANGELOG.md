@@ -4,6 +4,26 @@ All notable changes to this project will be documented in this file.
 
 This project starts tracked versioning at `0.2.0`.
 
+## [0.2.3] - Unreleased
+
+### Added
+
+* Added support for gitignored `Config.local.psd1` machine-specific overrides.
+* Added `install.cmd` as a double-clickable installer launcher that keeps installer output visible.
+* Added user-selectable install paths through `install.ps1`.
+* Added installer self-elevation through the Windows UAC prompt when not already running as administrator.
+* Added installer pause-on-exit support for launcher-driven installs.
+* Added install-generated `update.ps1` and `uninstall.ps1` helpers.
+* Added installer prompts for creating an elevated desktop shortcut and registering a highest-privilege startup task.
+
+### Changed
+
+* Updated config loading so `-ConfigPath` takes priority, followed by `Config.local.psd1` overrides, then tracked `Config.psd1` defaults.
+* Added README guidance for avoiding merge conflicts when customizing tracked `HeaderLocalhost.txt`.
+* Replaced the old `sync.ps1` flow with `install.ps1`.
+* Moved the installable application payload into `assets` while keeping repository docs and the installer launcher at the root.
+* Updated the generated update helper to offer override-all, override-all-except-host-parts, and file-by-file approval modes.
+
 ## [0.2.2] - 2026-04-19
 
 ### Added
@@ -22,7 +42,6 @@ This project starts tracked versioning at `0.2.0`.
 * Changed hosts rebuild ordering so the configured header is written first, followed by host-part files in ascending `HostPartOrder`.
 * Removed static config targets for individual non-header host-part files.
 * Renamed tracked config and host-part files to remove redundant `.example` suffixes.
-* Updated config loading to use `data\Config.psd1` directly unless `-ConfigPath` is provided.
 * Changed WSL service startup and portproxy refresh to loop over configured entries instead of hardcoded Apache/MySQL and Apache/Nginx/MERN/Rails assumptions.
 * Updated README documentation for dynamic config, ordered host parts, configurable services, configurable portproxy mappings, and upstream-first contribution guidance.
 
