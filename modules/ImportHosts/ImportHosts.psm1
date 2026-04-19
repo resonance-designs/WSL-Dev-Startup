@@ -3,8 +3,7 @@ function BackupHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $ti
         throw "Windows hosts file was not found at '$($config.WinHostsFile)'."
     }
 
-    $backup_dir = $PSScriptRoot + "\..\.." + $config.Backups
-    $backup_dir = [System.IO.Path]::GetFullPath($backup_dir)
+    $backup_dir = [System.IO.Path]::GetFullPath((Join-Path $PSScriptRoot (Join-Path "..\.." $config.Backups)))
     New-Item -ItemType Directory -Path $backup_dir -Force | Out-Null
 
     $timestamp = Get-Date -Format "yyyyMMdd-HHmmss"
@@ -17,7 +16,8 @@ function BackupHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $ti
 
 function WriteHostFile($content) {
     $text = ($content | Where-Object { $null -ne $_ }) -join [Environment]::NewLine
-    [System.IO.File]::WriteAllText($config.WinHostsFile, $text + [Environment]::NewLine, [System.Text.Encoding]::UTF8)
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::WriteAllText($config.WinHostsFile, $text + [Environment]::NewLine, $utf8NoBom)
 }
 
 function AppendHostFile($content) {
@@ -26,7 +26,8 @@ function AppendHostFile($content) {
         return
     }
 
-    [System.IO.File]::AppendAllText($config.WinHostsFile, $text + [Environment]::NewLine, [System.Text.Encoding]::UTF8)
+    $utf8NoBom = New-Object System.Text.UTF8Encoding($false)
+    [System.IO.File]::AppendAllText($config.WinHostsFile, $text + [Environment]::NewLine, $utf8NoBom)
 }
 
 function ClearHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bclr, $time, $sleep_msg, $sleep_fclr, $sleep_bclr) {
@@ -41,7 +42,7 @@ function AddHostPart($file) {
     AppendHostFile $host_part
 }
 
-function AddWSLHost($filename) {
+function AddWSLHost() {
     AppendHostFile $hosts.ForEach({$PSItem.IP + "`t`t`t" + $PSItem.Name})
 }
 
@@ -82,7 +83,10 @@ function ImportApacheVHosts($msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, $ok_bc
         $existing_hosts = Get-Content -Path $config.WinHostsFile | ForEach-Object {
             $line = ($_ -split "#")[0].Trim()
             if ($line) {
-                ($line -split "\s+")[-1]
+                $tokens = $line -split "\s+"
+                if ($tokens.Count -gt 1) {
+                    $tokens[1..($tokens.Count - 1)]
+                }
             }
         }
     }
@@ -108,7 +112,7 @@ function ImportHostsArray($array, $msg, $msg_fclr, $msg_bclr, $space, $ok_fclr, 
     . $host_parts"$array"
     $invalidHosts = $hosts | Where-Object { $_.Action -ne "add" }
     if (-not $invalidHosts) {
-        AddWSLHost $config.WinHostsFile
+        AddWSLHost
     } else {
         throw "Invalid operation in hosts array - only 'add' is currently supported."
     }
