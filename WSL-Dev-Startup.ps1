@@ -53,12 +53,12 @@ function ResolveConfigPath([string]$RequestedConfigPath) {
         return (Resolve-Path -LiteralPath $RequestedConfigPath).Path
     }
 
-    $active_config = Join-Path $PSScriptRoot "data\Config.psd1"
-    if (Test-Path -LiteralPath $active_config -PathType Leaf) {
-        return $active_config
+    $config_path = Join-Path $PSScriptRoot "data\Config.psd1"
+    if (-not (Test-Path -LiteralPath $config_path -PathType Leaf)) {
+        throw "Config file was not found at '$config_path'."
     }
 
-    return Join-Path $PSScriptRoot "data\Config.example.psd1"
+    return $config_path
 }
 
 $effectivePauseOnExit = $PauseOnExit

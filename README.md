@@ -110,14 +110,13 @@ Start-ScheduledTask -TaskPath "\Scripts\" -TaskName "WSL-Dev-Startup"
 
 ## Configuration
 
-The script uses the first available config file in this order:
+The main config file is:
 
 ```text
 data\Config.psd1
-data\Config.example.psd1
 ```
 
-For a local install, copy the example config to `Config.psd1` and customize that file. `Config.psd1` is ignored by Git, so local system settings stay local.
+Edit `Config.psd1` to match your local system. Machine-specific settings can live directly in this file.
 
 Pass `-ConfigPath` to use a specific config file:
 
@@ -186,8 +185,7 @@ The project root contains:
 
 The `data` folder contains:
 
-* `Config.example.psd1`: example configuration.
-* `Config.psd1`: optional active local configuration. This file is ignored by Git.
+* `Config.psd1`: main configuration.
 * `host-parts/`: files used to rebuild the Windows hosts file.
 * `ui-elements/Colors.ps1`: terminal color variables.
 * `backups/`: runtime hosts-file backups. This folder is ignored by Git.
@@ -201,7 +199,7 @@ The `modules` folder contains:
 
 The local install helper lives outside the repo:
 
-* `C:\Scripts\sync.ps1`: syncs repo changes to `C:\Scripts\WSL-Dev-Startup` while protecting local config, host-parts, and backups by default.
+* `C:\Scripts\sync.ps1`: syncs repo changes to `C:\Scripts\WSL-Dev-Startup` while protecting generated backups.
 
 ## Host Parts
 
@@ -303,4 +301,4 @@ If you improve the script, please open a pull request against the main repositor
 
 ## Notes
 
-Use `Config.psd1` for local configuration and keep `Config.example.psd1` as the repo template. Update host-part files to match your local domains, service ports, and desired host blocks.
+Update `Config.psd1` and the host-part files to match your local domains, service ports, and desired host blocks.

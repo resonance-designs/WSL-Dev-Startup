@@ -1,4 +1,8 @@
 # HostPartOrder: 30
+#
+# Add ad, tracker, or unwanted external domains to block below.
+# This plain-text file is appended to the generated Windows hosts file after
+# lower-numbered host parts. Keep one hosts-file entry per line.
 
 # Shady Sites & Ad Servers
 127.0.0.1               freeviewmovies.com
