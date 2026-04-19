@@ -1,4 +1,8 @@
 # HostPartOrder: 20
+#
+# Add software-related domains to block below.
+# This plain-text file is appended to the generated Windows hosts file after
+# lower-numbered host parts. Keep one hosts-file entry per line.
 
 # Block Software Sites
 ## Torrent

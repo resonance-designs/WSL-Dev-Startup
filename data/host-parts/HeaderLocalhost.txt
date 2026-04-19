@@ -1,6 +1,8 @@
-################ Copyright (c) 2012 - 2023 Resonance Designs ################
-#   This is the HOST file for Resonance Designs machines running the        #
-#   Windows 10 operating system. This file serves three functions:          #
+################ Copyright (c) 2023 - 2026 Resonance Designs ################
+#  This header is written first during every generated hosts-file rebuild.  #
+#        Keep localhost and any top-level explanatory comments here.        #
+#     This is the HOST file for Resonance Designs machines running the      #
+#       Windows operating system. This file serves three functions:         #
 #       1)  To block specific host names from making outgoing connections   #
 #           to the internet.                                                #
 #       2)  To add a level of privacy, security, and parental control to    #
